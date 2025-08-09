@@ -179,7 +179,7 @@ jobs:
         run: |
           echo "env.BUILD_ARGS: ${{ env.BUILD_ARGS }}"
 
-      - name: Build [ ${{ inputs.version }} - ${{ inputs.board }} - ${{ inputs.release }} - ${{ inputs.branch }} - ${{ inputs.system }} ]
+      - name: Build [ ${{ inputs.version }} - ${{ inputs.board }} - ${{ inputs.release }} - ${{ inputs.branch }} - ${{ inputs.system }} - ${{ inputs.rootfs }} ]
         run: |
           pushd build
           bash ./compile.sh build BOARD=${{ inputs.board }} \
@@ -189,7 +189,7 @@ jobs:
           RELEASE=${{ inputs.release }} \
           COMPRESS_OUTPUTIMAGE=sha,img,xz \
           BSPFREEZE=${{ inputs.bspfreeze }} \
-          ROOTFS_TYPE==${{ inputs.rootfs }} \
+          ROOTFS_TYPE=${{ inputs.rootfs }} \
           VENDOR=${{ inputs.vendor }}
           popd
 
@@ -222,5 +222,6 @@ jobs:
             - Install command: armbian-install
           draft: false
           prerelease: false
+
 
 
