@@ -83,6 +83,15 @@ on:
           - 'no'
         default: 'yes'
 
+      rootfs:
+        description: 'ROOTFS'
+        required: false
+        type: choice
+        options:
+          - ext4
+          - btrfs
+        default: ext4
+
       vendor:
         description: 'Vendor'
         required: false
@@ -180,6 +189,7 @@ jobs:
           RELEASE=${{ inputs.release }} \
           COMPRESS_OUTPUTIMAGE=sha,img,xz \
           BSPFREEZE=${{ inputs.bspfreeze }} \
+          ROOTFS_TYPE==${{ inputs.rootfs }} \
           VENDOR=${{ inputs.vendor }}
           popd
 
@@ -212,4 +222,5 @@ jobs:
             - Install command: armbian-install
           draft: false
           prerelease: false
+
 
