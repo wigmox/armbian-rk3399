@@ -140,6 +140,8 @@ jobs:
       - name: Copy targets
         run: |
           cp -rvf userpatches build/
+          # 修改rootfs 分区位置
+          sed -i 's|setenv rootdev "/dev/mmcblk0p1"|setenv rootdev "/dev/mmcblk0p2"|g' build/config/bootscripts/boot-rockchip.cmd
           # 修改日志等级为最高
           sed -i 's/\bverbosity=1\b/verbosity=7/g' build/config/bootenv/rockchip64.txt
           # cp -f rockchip64_common.inc.txt build/config/sources/families/include/rockchip64_common.inc
