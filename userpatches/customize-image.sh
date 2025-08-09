@@ -70,7 +70,7 @@ InstallOpenMediaVault() {
 	echo root:openmediavault | chpasswd
 	rm /root/.not_logged_in_yet
 	. /etc/default/cpufrequtils
-	export LANG=C LC_ALL="en_US.UTF-8"
+	export LANG=C LC_ALL="zh_CN.UTF-8"
 	export DEBIAN_FRONTEND=noninteractive
 	export APT_LISTCHANGES_FRONTEND=none
 
