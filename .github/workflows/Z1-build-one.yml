@@ -1,4 +1,4 @@
-name: K1-build-one
+name: Z1-build-one
 
 on:
   workflow_dispatch:
@@ -210,3 +210,4 @@ jobs:
             - Install command: armbian-install
           draft: false
           prerelease: false
+
