@@ -9,6 +9,8 @@ on:
         required: true
         type: choice
         options:
+          - fine3399
+          - firefly-rk3399
           - rk-sapphire
           - rock-4b
           - nanopim4v2
@@ -230,6 +232,7 @@ jobs:
             - Install command: armbian-install
           draft: false
           prerelease: false
+
 
 
 
