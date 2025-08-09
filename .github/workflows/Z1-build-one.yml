@@ -124,7 +124,7 @@ jobs:
       - name: Install required packages
         run: |
           sudo apt update
-          sudo apt install -y neofetch
+          sudo apt install -y neofetch btrfs-progs
 
       - name: Show host info
         run: |
@@ -222,6 +222,7 @@ jobs:
             - Install command: armbian-install
           draft: false
           prerelease: false
+
 
 
 
