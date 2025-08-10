@@ -1,0 +1,257 @@
+name: Z2-build-one-test
+
+on:
+  workflow_dispatch:
+    inputs:
+
+      board:
+        description: 'Target Board'
+        required: true
+        type: choice
+        options:
+          - fine3399
+          - firefly-rk3399
+          - rk-sapphire
+          - rock-4b
+          - nanopim4v2
+          - nanopct4
+          - fmx1
+          - aio-3399c-ai
+          - verypc-d039
+          - yskj
+          - dg3399
+        default: "aio-3399c-ai"
+
+      version:
+        description: 'Armbian Version'
+        required: true
+        type: choice
+        options:
+          - v25.8.0-trunk.460
+          - v25.05
+          - v25.02
+          - v24.11
+          - main
+        default: v25.02
+
+      branch:
+        description: 'Branch'
+        required: true
+        type: choice
+        options:
+          - current
+          - edge
+          - vendor
+        default: current
+
+      release:
+        description: '选择操作系统版本'
+        required: true
+        type: choice
+        options:
+          - 'Debian 11-Bullseye 🎯 >> bullseye'
+          - 'Debian 12-Bookworm 📚 >> bookworm'
+          - 'Debian 13-Trixie 🎪 >> trixie'
+          - 'Ubuntu 22.04-Jammy Jellyfish 🪼 >> jammy'
+          - 'Ubuntu 24.04-Noble Numbat 🐜 >> noble'
+          - 'Ubuntu 25.04-Plucky Puffin 🐧 >> plucky'
+        default: 'Debian 12-Bookworm 📚 >> bookworm'
+
+      system:
+        description: 'System Type'
+        required: true
+        type: choice
+        options:
+          - minimal
+          - server
+          - desktop
+        default: minimal
+
+      desktop:
+        description: 'Desktop Type (if system is desktop)'
+        required: false
+        type: choice
+        options:
+          - xfce
+          - cinnamon
+          - gnome
+          - i3-wm
+        default: xfce
+
+      bspfreeze:
+        description: 'Freeze BSP'
+        required: false
+        type: choice
+        options:
+          - 'yes'
+          - 'no'
+        default: 'yes'
+
+      rootfs:
+        description: 'ROOTFS'
+        required: false
+        type: choice
+        options:
+          - ext4
+          - btrfs
+        default: ext4
+
+      vendor:
+        description: 'Vendor'
+        required: false
+        type: choice
+        options:
+          - Armbian
+          - Armbian-unofficial
+        default: Armbian
+
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+
+    steps:
+
+      - name: Free disk space
+        run: |
+          echo "Disk space before cleanup:"
+          df -h
+          sudo rm -rf /usr/local/.ghcup
+          sudo rm -rf /opt/hostedtoolcache/CodeQL
+          sudo rm -rf /usr/local/lib/android/sdk/ndk
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf /opt/ghc
+          sudo rm -rf /usr/local/share/boost
+          sudo apt-get clean
+          echo "Disk space after cleanup:"
+          df -h
+
+      - name: Install required packages
+        run: |
+          sudo -E apt-get -y update
+          sudo -E apt-get -y purge azure-cli ghc* zulu* llvm* firefox google* dotnet* powershell openjdk* mongodb* moby* || true
+          sudo -E apt-get -y install neofetch btrfs-progs $(curl -fsSL https://tinyurl.com/ubuntu2204-build-armbian)
+          sudo -E systemctl daemon-reload
+          # sudo -E apt-get -y full-upgrade
+          sudo -E apt-get -y autoremove --purge
+          sudo -E apt-get clean
+          echo 加载 Btrfs 内核模块
+          sudo modprobe btrfs
+          echo 确认模块已加载
+          lsmod | grep btrfs
+          echo 检查内核是否支持
+          grep BTRFS /boot/config-$(uname -r)
+
+      - name: Show host info
+        run: |
+          neofetch --off --color_blocks off --stdout
+
+          echo -e "\033[32mCPU info:\033[0m"
+          lscpu
+
+          echo -e "\033[32mMemory info:\033[0m"
+          free -h
+
+          echo -e "\033[32mDisk space info:\033[0m"
+          df -hT ${PWD}
+
+      - name: Checkout targets
+        uses: actions/checkout@v4
+
+      - name: Checkout armbian
+        run: |
+          git clone -q --single-branch --depth=1 --branch=${{ inputs.version }} https://github.com/armbian/build.git
+
+      - name: Copy targets
+        run: |
+          cp -rvf userpatches build/
+          # 修改rootfs 分区位置
+          # sed -i 's|setenv rootdev "/dev/mmcblk0p1"|setenv rootdev "/dev/mmcblk0p2"|g' build/config/bootscripts/boot-rockchip.cmd
+          # 修改日志等级为最高
+          sed -i 's/\bverbosity=1\b/verbosity=7/g' build/config/bootenv/rockchip64.txt
+          # cp -f rockchip64_common.inc.txt build/config/sources/families/include/rockchip64_common.inc
+          # sed -i 's|https://github.com/armbian/rkbin|https://github.com/wingonwu/rkbin|g' build/extensions/rkbin-tools.sh
+          # grep 'wingonwu/rkbin' build/extensions/rkbin-tools.sh
+
+      - name: Set up system type
+        env:
+          DESKTOP_APPGROUPS: "browsers chat desktop_tools editors email internet multimedia office programming remote_desktop"
+        run: |
+          if [ "${{ inputs.system }}" == "minimal" ]; then
+            echo "Setting up for minimal system..."
+            SYSTEM_ARGS="BUILD_DESKTOP=no BUILD_MINIMAL=yes"
+          elif [ "${{ inputs.system }}" == "server" ]; then
+            echo "Setting up for server system..."
+            SYSTEM_ARGS="BUILD_DESKTOP=no BUILD_MINIMAL=no"
+          elif [ "${{ inputs.system }}" == "desktop" ]; then
+            echo "Setting up for desktop system..."
+            SYSTEM_ARGS="BUILD_DESKTOP=yes BUILD_MINIMAL=no DESKTOP_ENVIRONMENT=${{ inputs.desktop }} \
+                  DESKTOP_ENVIRONMENT_CONFIG_NAME=config_base \
+                  DESKTOP_APPGROUPS_SELECTED=\"${{ env.DESKTOP_APPGROUPS }}\""
+          fi
+          echo "BUILD_ARGS=$SYSTEM_ARGS" >> $GITHUB_ENV
+
+      - name: Show environment
+        run: |
+          echo "env.BUILD_ARGS: ${{ env.BUILD_ARGS }}"
+
+      - name: 提取系统代号
+         id: extract_release
+         run: |
+           # 使用awk提取最后一个>>之后的部分
+           RELEASE_CODE=$(echo "${{ inputs.release }}" | awk -F' >> ' '{print $2}')
+           # 如果没有>>，则使用整个字符串（防止错误）
+           if [ -z "$RELEASE_CODE" ]; then
+             RELEASE_CODE="${{ inputs.release }}"
+           fi
+         echo "release_code=$RELEASE_CODE" >> $GITHUB_OUTPUT
+
+      - name: Build [ ${{ inputs.version }} - ${{ inputs.board }} - ${{ inputs.release }} - ${{ inputs.branch }} - ${{ inputs.system }} - ${{ inputs.rootfs }} ]
+        run: |
+          pushd build
+          bash ./compile.sh build BOARD=${{ inputs.board }} \
+          BRANCH=${{ inputs.branch }} \
+          ${{ env.BUILD_ARGS }} \
+          KERNEL_CONFIGURE=no \
+          RELEASE=${{ steps.extract_release.outputs.release_code }} \
+          COMPRESS_OUTPUTIMAGE=sha,img,xz \
+          BSPFREEZE=${{ inputs.bspfreeze }} \
+          ROOTFS_TYPE=${{ inputs.rootfs }} \
+          VENDOR=${{ inputs.vendor }}
+          popd
+
+      - name: Show remaining space
+        run: |
+          df -hT ${PWD}
+
+      - name: Show images
+        run: |
+          ls -lh ${{ github.workspace }}/build/output/images
+          echo "buildtime=$(date +"%Y.%m")" >> $GITHUB_ENV
+
+      - name: Upload images
+        uses: ncipollo/release-action@main
+        if: success()
+        with:
+          tag: "${{ inputs.vendor }}_${{ inputs.version }}_${{ inputs.release }}_${{ inputs.branch }}_${{ inputs.system }}_b${{ env.buildtime }}"
+          artifacts: "${{ github.workspace }}/build/output/images/*"
+          allowUpdates: true
+          removeArtifacts: false
+          replacesArtifacts: true
+          token: ${{ secrets.GITHUB_TOKEN }}
+          body: |
+            ### Armbian Image information
+            - Default username: root
+            - Default password: 1234
+            - Change apt source: armbian-apt
+            - Config command: armbian-config
+            - Upgrade command: armbian-upgrade
+            - Install command: armbian-install
+          draft: false
+          prerelease: false
+
+
+
+
+
+
+
