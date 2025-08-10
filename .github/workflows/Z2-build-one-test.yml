@@ -195,15 +195,15 @@ jobs:
           echo "env.BUILD_ARGS: ${{ env.BUILD_ARGS }}"
 
       - name: 提取系统代号
-         id: extract_release
-         run: |
-           # 使用awk提取最后一个>>之后的部分
-           RELEASE_CODE=$(echo "${{ inputs.release }}" | awk -F' >> ' '{print $2}')
-           # 如果没有>>，则使用整个字符串（防止错误）
-           if [ -z "$RELEASE_CODE" ]; then
-             RELEASE_CODE="${{ inputs.release }}"
-           fi
-         echo "release_code=$RELEASE_CODE" >> $GITHUB_OUTPUT
+          id:extract_release
+        run: |
+          # 使用awk提取最后一个>>之后的部分
+          RELEASE_CODE=$(echo "${{ inputs.release }}" | awk -F' >> ' '{print $2}')
+          # 如果没有>>，则使用整个字符串（防止错误）
+          if [ -z "$RELEASE_CODE" ]; then
+          RELEASE_CODE="${{ inputs.release }}"
+          fi
+          echo "release_code=$RELEASE_CODE" >> $GITHUB_OUTPUT
 
       - name: Build [ ${{ inputs.version }} - ${{ inputs.board }} - ${{ inputs.release }} - ${{ inputs.branch }} - ${{ inputs.system }} - ${{ inputs.rootfs }} ]
         run: |
@@ -248,10 +248,4 @@ jobs:
             - Install command: armbian-install
           draft: false
           prerelease: false
-
-
-
-
-
-
 
