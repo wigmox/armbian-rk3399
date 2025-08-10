@@ -136,23 +136,23 @@ jobs:
           #sudo -E apt-get clean
           #echo 加载 Btrfs 内核模块
           #sudo modprobe btrfs
-          echo 确认模块已加载
+          #echo 确认模块已加载
           #lsmod | grep btrfs
-          echo 检查内核是否支持
+          #echo 检查内核是否支持
           #grep BTRFS /boot/config-$(uname -r)
 
       - name: Show host info
         run: |
-          neofetch --off --color_blocks off --stdout
+          #neofetch --off --color_blocks off --stdout
 
-          echo -e "\033[32mCPU info:\033[0m"
-          lscpu
+          #echo -e "\033[32mCPU info:\033[0m"
+          #lscpu
 
-          echo -e "\033[32mMemory info:\033[0m"
-          free -h
+          #echo -e "\033[32mMemory info:\033[0m"
+          #free -h
 
-          echo -e "\033[32mDisk space info:\033[0m"
-          df -hT ${PWD}
+          #echo -e "\033[32mDisk space info:\033[0m"
+          #df -hT ${PWD}
 
       - name: Checkout targets
         uses: actions/checkout@v4
@@ -252,6 +252,7 @@ jobs:
             - Install command: armbian-install
           draft: false
           prerelease: false
+
 
 
 
