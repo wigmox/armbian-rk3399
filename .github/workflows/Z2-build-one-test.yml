@@ -49,13 +49,13 @@ on:
         required: true
         type: choice
         options:
-          - 'Debian 11-Bullseye 🎯 >> bullseye'
-          - 'Debian 12-Bookworm 📚 >> bookworm'
-          - 'Debian 13-Trixie 🎪 >> trixie'
-          - 'Ubuntu 22.04-Jammy Jellyfish 🪼 >> jammy'
-          - 'Ubuntu 24.04-Noble Numbat 🐜 >> noble'
-          - 'Ubuntu 25.04-Plucky Puffin 🐧 >> plucky'
-        default: 'Debian 12-Bookworm 📚 >> bookworm'
+          - 'Debian11 🎯 >> Bullseye'
+          - 'Debian12 📚 >> Bookworm'
+          - 'Debian13 🎪 >> Trixie'
+          - 'Ubuntu22.04 🪼 >> Jammy'
+          - 'Ubuntu24.04 🐜 >> Noble'
+          - 'Ubuntu25.04 🐧 >> Plucky'
+        default: 'Debian12 📚 >> Bookworm'
 
       system:
         description: 'System Type'
@@ -198,14 +198,14 @@ jobs:
           id:extract_release
         run: |
           # 使用awk提取最后一个>>之后的部分
-          RELEASE_CODE=$(echo "${{ inputs.release }}" | awk -F' >> ' '{print $2}')
+          RELEASE_CODE=$(echo "${{ inputs.release }}"  | awk -F'>>' '{gsub(/^[ \t]+|[ \t]+$/, "", $2); print tolower($2)}')
           # 如果没有>>，则使用整个字符串（防止错误）
           if [ -z "$RELEASE_CODE" ]; then
           RELEASE_CODE="${{ inputs.release }}"
           fi
           echo "release_code=$RELEASE_CODE" >> $GITHUB_OUTPUT
 
-      - name: Build [ ${{ inputs.version }} - ${{ inputs.board }} - ${{ inputs.release }} - ${{ inputs.branch }} - ${{ inputs.system }} - ${{ inputs.rootfs }} ]
+      - name: Build [ ${{ inputs.version }} - ${{ inputs.board }} - ${{ steps.extract_release.outputs.release_code }} - ${{ inputs.branch }} - ${{ inputs.system }} - ${{ inputs.rootfs }} ]
         run: |
           pushd build
           bash ./compile.sh build BOARD=${{ inputs.board }} \
@@ -248,4 +248,5 @@ jobs:
             - Install command: armbian-install
           draft: false
           prerelease: false
+
 
