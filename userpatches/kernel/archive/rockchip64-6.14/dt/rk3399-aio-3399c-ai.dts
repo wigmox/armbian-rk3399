@@ -246,9 +246,8 @@
 };
 
 &gmac {
-	status = "okay";
-	assigned-clock-parents = <&clkin_gmac>;
 	assigned-clocks = <&cru SCLK_RMII_SRC>;
+	assigned-clock-parents = <&clkin_gmac>;
 	clock_in_out = "input";
 	phy-supply = <&vcc3v3_s3>;
 	phy-mode = "rgmii";
@@ -259,6 +258,7 @@
 	snps,reset-delays-us = <0 10000 50000>;
 	tx_delay = <0x2B>;
 	rx_delay = <0x23>;
+	status = "okay";
 };
 
 &i2c0 {
