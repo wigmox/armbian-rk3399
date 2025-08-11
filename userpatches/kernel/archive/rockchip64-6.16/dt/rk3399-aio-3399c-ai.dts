@@ -7,7 +7,10 @@
 #include <dt-bindings/input/linux-event-codes.h>
 #include <dt-bindings/leds/common.h>
 #include <dt-bindings/pwm/pwm.h>
-#include "rk3399.dtsi"
+
+//CPU 调度，无法启动可以更换，或者注释掉&cluster1_opp下面的opp05、opp06、opp07、opp08
+//#include "rk3399.dtsi"
+#include "rk3399-op1.dtsi"
 
 / {
 	model = "Firefly AIO-3399C AI";
@@ -225,6 +228,13 @@
 &gpu {
 	status = "okay";
 	mali-supply = <&vdd_gpu>;
+};
+//禁用
+//&cluster1_opp {
+//    /delete-node/ opp05;
+//    /delete-node/ opp06;
+//    /delete-node/ opp07;
+//    /delete-node/ opp08;
 };
 
 &vpu {
@@ -534,7 +544,7 @@
 };
 
 &uart2 {
-	status = "disabled";
+	status = "okay";
 };
 
 &pwm0 {
@@ -573,9 +583,9 @@
 	status = "okay";
 	//max-frequency = <150000000>;
 	bus-width = <8>;
-	mmc-hs200-1_8v;
-	//mmc-hs400-1_8v;
-	//mmc-hs400-enhanced-strobe;
+	//mmc-hs200-1_8v;
+	mmc-hs400-1_8v;
+	mmc-hs400-enhanced-strobe;
 	//keep-power-in-suspend;
 	non-removable;
 };
