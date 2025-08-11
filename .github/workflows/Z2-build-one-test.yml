@@ -233,9 +233,7 @@ jobs:
 
       - name: 生成发布标签
         id: tag
-        if: steps.compile.outputs.status == 'success' && env.UPLOAD_RELEASE == 'true' && !cancelled()
         run: |
-          echo "release_tag=$(date +"%Y.%m.%d-%H.%M")-${{ matrix.ARCHITECTURE }}" >> ${GITHUB_OUTPUT}
           touch release.txt
           echo "
           ### Armbian 镜像信息
@@ -257,7 +255,7 @@ jobs:
         uses: ncipollo/release-action@main
         if: success()
         with:
-          tag: "${{ inputs.vendor }}_${{ inputs.version }}_${{ inputs.release }}_${{ inputs.branch }}_${{ inputs.system }}_b${{ env.buildtime }}"
+          tag: "${{ inputs.vendor }}_${{ inputs.version }}_${{ env.release_code }} _${{ inputs.branch }}_${{ inputs.system }}_b${{ env.buildtime }}"
           artifacts: "${{ github.workspace }}/build/output/images/*"
           allowUpdates: true
           removeArtifacts: false
