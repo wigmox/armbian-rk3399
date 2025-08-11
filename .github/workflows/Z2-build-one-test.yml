@@ -127,32 +127,32 @@ jobs:
 
       - name: Install required packages
         run: |
-          #sudo -E apt-get -y update
-          #sudo -E apt-get -y purge azure-cli ghc* zulu* llvm* firefox google* dotnet* powershell openjdk* mongodb* moby* || true
-          #sudo -E apt-get -y install neofetch btrfs-progs $(curl -fsSL https://tinyurl.com/ubuntu2204-build-armbian)
-          #sudo -E systemctl daemon-reload
+          sudo -E apt-get -y update
+          sudo -E apt-get -y purge azure-cli ghc* zulu* llvm* firefox google* dotnet* powershell openjdk* mongodb* moby* || true
+          sudo -E apt-get -y install neofetch btrfs-progs $(curl -fsSL https://tinyurl.com/ubuntu2204-build-armbian)
+          sudo -E systemctl daemon-reload
           # sudo -E apt-get -y full-upgrade
-          #sudo -E apt-get -y autoremove --purge
-          #sudo -E apt-get clean
-          #echo 加载 Btrfs 内核模块
-          #sudo modprobe btrfs
-          #echo 确认模块已加载
-          #lsmod | grep btrfs
-          #echo 检查内核是否支持
-          #grep BTRFS /boot/config-$(uname -r)
+          sudo -E apt-get -y autoremove --purge
+          sudo -E apt-get clean
+          echo 加载 Btrfs 内核模块
+          sudo modprobe btrfs
+          echo 确认模块已加载
+          lsmod | grep btrfs
+          echo 检查内核是否支持
+          grep BTRFS /boot/config-$(uname -r)
 
       - name: Show host info
         run: |
-          #neofetch --off --color_blocks off --stdout
+          neofetch --off --color_blocks off --stdout
 
-          #echo -e "\033[32mCPU info:\033[0m"
-          #lscpu
+          echo -e "\033[32mCPU info:\033[0m"
+          lscpu
 
-          #echo -e "\033[32mMemory info:\033[0m"
-          #free -h
+          echo -e "\033[32mMemory info:\033[0m"
+          free -h
 
-          #echo -e "\033[32mDisk space info:\033[0m"
-          #df -hT ${PWD}
+          echo -e "\033[32mDisk space info:\033[0m"
+          df -hT ${PWD}
 
       - name: Checkout targets
         uses: actions/checkout@v4
@@ -190,12 +190,11 @@ jobs:
           fi
           echo "BUILD_ARGS=$SYSTEM_ARGS" >> $GITHUB_ENV
 
-      - name: Show environment
+      - name: 显示结果
         run: |
           echo "env.BUILD_ARGS: ${{ env.BUILD_ARGS }}"
 
       - name: 提取系统代号
-          id:extract_release
         run: |
           # 使用awk提取最后一个>>之后的部分
           RELEASE_CODE=$(echo "${{ inputs.release }}"  | awk -F'>>' '{gsub(/^[ \t]+|[ \t]+$/, "", $2); print tolower($2)}')
@@ -205,14 +204,9 @@ jobs:
           fi
           echo "release_code=$RELEASE_CODE" >> $GITHUB_ENV
 
-      - name: Show environment
+      - name: 显示结果
         run: |
           echo "env.release_code: ${{ env.release_code }}"
-
-      - name: 显示提取结果
-        run: |
-         echo "提取的代号: ${{ steps.extract_release.outputs.release_code }}"
-         echo "实际环境变量值: '${{ env.RELEASE_CODE }}'"
 
       - name: Build [ ${{ inputs.version }} - ${{ inputs.board }} - ${{ env.release_code }} - ${{ inputs.branch }} - ${{ inputs.system }} - ${{ inputs.rootfs }} ]
         run: |
@@ -221,7 +215,7 @@ jobs:
           BRANCH=${{ inputs.branch }} \
           ${{ env.BUILD_ARGS }} \
           KERNEL_CONFIGURE=no \
-          RELEASE=${{ steps.extract_release.outputs.release_code }} \
+          RELEASE=${{ env.release_code }} \
           COMPRESS_OUTPUTIMAGE=sha,img,xz \
           BSPFREEZE=${{ inputs.bspfreeze }} \
           ROOTFS_TYPE=${{ inputs.rootfs }} \
@@ -248,13 +242,19 @@ jobs:
           replacesArtifacts: true
           token: ${{ secrets.GITHUB_TOKEN }}
           body: |
-            ### Armbian Image information
-            - Default username: root
-            - Default password: 1234
-            - Change apt source: armbian-apt
-            - Config command: armbian-config
-            - Upgrade command: armbian-upgrade
-            - Install command: armbian-install
+            ### Armbian 镜像信息
+            - 💻 Armbian 版本: ${{ inputs.release }}
+            - 💻 分支：${{ inputs.branch }}
+            - 📂 源码: https://github.com/armbian/build.git
+            - 🌳 源码分支: ${{ inputs.version }}
+            - ⏱️ 编译时间: $(date +"%Y年%m月%d日%H时%M分")
+            - 🌐 ROOTFS 格式: ${{ inputs.rootfs }}
+            - 👤 默认用户名:  root
+            - 🔒 默认密码:  1234
+            - 📒 修改 apt 源: armbian-apt
+            - 📒 配置命令: armbian-config
+            - 📒 升级命令: armbian-upgrade
+            - 📒 安装命令: armbian-install
           draft: false
           prerelease: false
 
