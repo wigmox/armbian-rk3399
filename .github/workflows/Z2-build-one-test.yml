@@ -208,7 +208,7 @@ jobs:
         run: |
           echo "env.release_code: ${{ env.release_code }}"
 
-      - name: Build [ ${{ inputs.version }} - ${{ inputs.board }} - ${{ env.release_code }} - ${{ inputs.branch }} - ${{ inputs.system }} - ${{ inputs.rootfs }} ]
+      - name: Build [ ${{ inputs.version }} - ${{ inputs.board }} - ${{ inputs.release }} - ${{ inputs.branch }} - ${{ inputs.system }} - ${{ inputs.rootfs }} ]
         run: |
           pushd build
           bash ./compile.sh build BOARD=${{ inputs.board }} \
@@ -267,6 +267,7 @@ jobs:
           files: ${{ env.FIRMWARE }}/*
           draft: false
           prerelease: false
+
 
 
 
