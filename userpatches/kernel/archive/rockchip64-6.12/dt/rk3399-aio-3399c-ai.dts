@@ -235,7 +235,7 @@
 //    /delete-node/ opp06;
 //    /delete-node/ opp07;
 //    /delete-node/ opp08;
-};
+//};
 
 &vpu {
 	status = "okay";
