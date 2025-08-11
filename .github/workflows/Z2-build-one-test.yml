@@ -231,6 +231,28 @@ jobs:
           ls -lh ${{ github.workspace }}/build/output/images
           echo "buildtime=$(date +"%Y.%m")" >> $GITHUB_ENV
 
+    - name: 生成发布标签
+      id: tag
+      if: steps.compile.outputs.status == 'success' && env.UPLOAD_RELEASE == 'true' && !cancelled()
+      run: |
+        echo "release_tag=$(date +"%Y.%m.%d-%H.%M")-${{ matrix.ARCHITECTURE }}" >> ${GITHUB_OUTPUT}
+        touch release.txt
+        echo "
+          ### Armbian 镜像信息
+          - 💻 Armbian 版本: ${{ inputs.release }}
+          - 💻 分支：${{ inputs.branch }}
+          - 📂 源码: https://github.com/armbian/build.git
+          - 🌳 源码分支: ${{ inputs.version }}
+          - ⏱️ 编译时间: $(date +"%Y年%m月%d日%H时%M分")
+          - 🌐 ROOTFS 格式: ${{ inputs.rootfs }}
+          - 👤 默认用户名:  root
+          - 🔒 默认密码:  1234
+          - 📒 修改 apt 源: armbian-apt
+          - 📒 配置命令: armbian-config
+          - 📒 升级命令: armbian-upgrade
+          - 📒 安装命令: armbian-install " >> release.txt
+        echo "status=success" >> ${GITHUB_OUTPUT}
+
       - name: Upload images
         uses: ncipollo/release-action@main
         if: success()
@@ -241,20 +263,8 @@ jobs:
           removeArtifacts: false
           replacesArtifacts: true
           token: ${{ secrets.GITHUB_TOKEN }}
-          body: |
-            ### Armbian 镜像信息
-            - 💻 Armbian 版本: ${{ inputs.release }}
-            - 💻 分支：${{ inputs.branch }}
-            - 📂 源码: https://github.com/armbian/build.git
-            - 🌳 源码分支: ${{ inputs.version }}
-            - ⏱️ 编译时间: $(date +"%Y年%m月%d日%H时%M分")
-            - 🌐 ROOTFS 格式: ${{ inputs.rootfs }}
-            - 👤 默认用户名:  root
-            - 🔒 默认密码:  1234
-            - 📒 修改 apt 源: armbian-apt
-            - 📒 配置命令: armbian-config
-            - 📒 升级命令: armbian-upgrade
-            - 📒 安装命令: armbian-install
+          body_path: release.txt
+          files: ${{ env.FIRMWARE }}/*
           draft: false
           prerelease: false
 
