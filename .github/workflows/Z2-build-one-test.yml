@@ -208,7 +208,7 @@ jobs:
         run: |
           echo "env.release_code: ${{ env.release_code }}"
 
-      - name: Build [ ${{ inputs.version }} - ${{ inputs.board }} - ${{ env.release_code }} - ${{ inputs.branch }} - ${{ inputs.system }} - ${{ inputs.rootfs }} ]
+      - name: Build [ ${{ inputs.version }} - ${{ inputs.board }} - ${{ inputs.release }} - ${{ inputs.branch }} - ${{ inputs.system }} - ${{ inputs.rootfs }} ]
         run: |
           pushd build
           bash ./compile.sh build BOARD=${{ inputs.board }} \
@@ -231,13 +231,13 @@ jobs:
           ls -lh ${{ github.workspace }}/build/output/images
           echo "buildtime=$(date +"%Y.%m")" >> $GITHUB_ENV
 
-    - name: 生成发布标签
-      id: tag
-      if: steps.compile.outputs.status == 'success' && env.UPLOAD_RELEASE == 'true' && !cancelled()
-      run: |
-        echo "release_tag=$(date +"%Y.%m.%d-%H.%M")-${{ matrix.ARCHITECTURE }}" >> ${GITHUB_OUTPUT}
-        touch release.txt
-        echo "
+      - name: 生成发布标签
+        id: tag
+        if: steps.compile.outputs.status == 'success' && env.UPLOAD_RELEASE == 'true' && !cancelled()
+        run: |
+          echo "release_tag=$(date +"%Y.%m.%d-%H.%M")-${{ matrix.ARCHITECTURE }}" >> ${GITHUB_OUTPUT}
+          touch release.txt
+          echo "
           ### Armbian 镜像信息
           - 💻 Armbian 版本: ${{ inputs.release }}
           - 💻 分支：${{ inputs.branch }}
@@ -251,7 +251,7 @@ jobs:
           - 📒 配置命令: armbian-config
           - 📒 升级命令: armbian-upgrade
           - 📒 安装命令: armbian-install " >> release.txt
-        echo "status=success" >> ${GITHUB_OUTPUT}
+          echo "status=success" >> ${GITHUB_OUTPUT}
 
       - name: Upload images
         uses: ncipollo/release-action@main
@@ -267,6 +267,8 @@ jobs:
           files: ${{ env.FIRMWARE }}/*
           draft: false
           prerelease: false
+
+
 
 
 
