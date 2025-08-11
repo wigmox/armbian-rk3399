@@ -203,22 +203,18 @@ jobs:
           if [ -z "$RELEASE_CODE" ]; then
           RELEASE_CODE="${{ inputs.release }}"
           fi
-           # 调试：显示处理后的值
-          echo "处理后的值: '$CLEAN_CODE'"
-          
-           # 正确设置输出变量（关键修复）
-          echo "release_code=$CLEAN_CODE" >> $GITHUB_OUTPUT
-          
-           # 验证输出文件内容
-          echo "GITHUB_OUTPUT内容:"
-          cat $GITHUB_OUTPUT
-  
+          echo "release_code=$RELEASE_CODE" >> $GITHUB_ENV
+
+      - name: Show environment
+        run: |
+          echo "env.release_code: ${{ env.release_code }}"
+
       - name: 显示提取结果
         run: |
          echo "提取的代号: ${{ steps.extract_release.outputs.release_code }}"
          echo "实际环境变量值: '${{ env.RELEASE_CODE }}'"
 
-      - name: Build [ ${{ inputs.version }} - ${{ inputs.board }} - ${{ steps.extract_release.outputs.release_code }} - ${{ inputs.branch }} - ${{ inputs.system }} - ${{ inputs.rootfs }} ]
+      - name: Build [ ${{ inputs.version }} - ${{ inputs.board }} - ${{ env.release_code }} - ${{ inputs.branch }} - ${{ inputs.system }} - ${{ inputs.rootfs }} ]
         run: |
           pushd build
           bash ./compile.sh build BOARD=${{ inputs.board }} \
