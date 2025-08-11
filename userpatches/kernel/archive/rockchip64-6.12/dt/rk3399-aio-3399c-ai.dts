@@ -191,6 +191,14 @@
 
 	bt656-supply = <&vcc_3v0>;		/* APIO2_VDD */
 	audio-supply = <&vcca0v9_codec>;	/* APIO5_VDD */
+	vcc_phy: vcc-phy-regulator {
+		compatible = "regulator-fixed";
+		regulator-name = "vcc_phy";
+		regulator-always-on;
+		regulator-boot-on;
+	};
+
+
 	sdmmc-supply = <&vcc_sdio>;		/* SDMMC0_VDD */
 	gpio1830-supply = <&vcc_3v0>;		/* APIO4_VDD */
 };
