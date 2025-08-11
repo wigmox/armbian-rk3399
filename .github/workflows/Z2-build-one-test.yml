@@ -5,7 +5,7 @@ on:
     inputs:
 
       board:
-        description: 'Target Board'
+        description: '设备型号'
         required: true
         type: choice
         options:
@@ -23,19 +23,20 @@ on:
         default: "aio-3399c-ai"
 
       version:
-        description: 'Armbian Version'
+        description: 'Armbian 版本'
         required: true
         type: choice
         options:
-          - v25.8.0-trunk.460
-          - v25.05
-          - v25.02
           - v24.11
+          - v25.02
+          - v25.05
+          - v25.8.0-trunk.460
+          - v25.11.0-trunk.3
           - main
         default: v25.02
 
       branch:
-        description: 'Branch'
+        description: '系统分支'
         required: true
         type: choice
         options:
@@ -45,7 +46,7 @@ on:
         default: current
 
       release:
-        description: '选择操作系统版本'
+        description: '选择系统版本'
         required: true
         type: choice
         options:
@@ -58,7 +59,7 @@ on:
         default: 'Debian12 📚 >> Bookworm'
 
       system:
-        description: 'System Type'
+        description: '系统类型'
         required: true
         type: choice
         options:
@@ -68,7 +69,7 @@ on:
         default: minimal
 
       desktop:
-        description: 'Desktop Type (if system is desktop)'
+        description: '桌面类型（如果系统类型选择桌面）'
         required: false
         type: choice
         options:
@@ -79,7 +80,7 @@ on:
         default: xfce
 
       bspfreeze:
-        description: 'Freeze BSP'
+        description: '冻结 BSP'
         required: false
         type: choice
         options:
@@ -88,7 +89,7 @@ on:
         default: 'yes'
 
       rootfs:
-        description: 'ROOTFS'
+        description: 'ROOTFS 分区格式'
         required: false
         type: choice
         options:
@@ -97,7 +98,7 @@ on:
         default: ext4
 
       vendor:
-        description: 'Vendor'
+        description: '源码支持'
         required: false
         type: choice
         options:
@@ -111,9 +112,9 @@ jobs:
 
     steps:
 
-      - name: Free disk space
+      - name: 检查磁盘可用空间
         run: |
-          echo "Disk space before cleanup:"
+          echo "清理前的磁盘空间:"
           df -h
           sudo rm -rf /usr/local/.ghcup
           sudo rm -rf /opt/hostedtoolcache/CodeQL
@@ -122,10 +123,10 @@ jobs:
           sudo rm -rf /opt/ghc
           sudo rm -rf /usr/local/share/boost
           sudo apt-get clean
-          echo "Disk space after cleanup:"
+          echo "清理后的磁盘空间:"
           df -h
 
-      - name: Install required packages
+      - name: 安装所需的软件包
         run: |
           sudo -E apt-get -y update
           sudo -E apt-get -y purge azure-cli ghc* zulu* llvm* firefox google* dotnet* powershell openjdk* mongodb* moby* || true
@@ -141,7 +142,7 @@ jobs:
           echo 检查内核是否支持
           grep BTRFS /boot/config-$(uname -r)
 
-      - name: Show host info
+      - name: 显示主机信息
         run: |
           neofetch --off --color_blocks off --stdout
 
@@ -154,14 +155,14 @@ jobs:
           echo -e "\033[32mDisk space info:\033[0m"
           df -hT ${PWD}
 
-      - name: Checkout targets
+      - name: 检出目标
         uses: actions/checkout@v4
 
-      - name: Checkout armbian
+      - name: 检出 Armbian 源码
         run: |
           git clone -q --single-branch --depth=1 --branch=${{ inputs.version }} https://github.com/armbian/build.git
 
-      - name: Copy targets
+      - name: 复制 USERPATCHES 内容到源码根目录
         run: |
           cp -rvf userpatches build/
           # 修改rootfs 分区位置
@@ -172,7 +173,7 @@ jobs:
           # sed -i 's|https://github.com/armbian/rkbin|https://github.com/wingonwu/rkbin|g' build/extensions/rkbin-tools.sh
           # grep 'wingonwu/rkbin' build/extensions/rkbin-tools.sh
 
-      - name: Set up system type
+      - name: 设置系统类型
         env:
           DESKTOP_APPGROUPS: "browsers chat desktop_tools editors email internet multimedia office programming remote_desktop"
         run: |
@@ -190,9 +191,12 @@ jobs:
           fi
           echo "BUILD_ARGS=$SYSTEM_ARGS" >> $GITHUB_ENV
 
-      - name: 显示结果
+      - name: 显示选择所要编译的的系统类型
         run: |
           echo "env.BUILD_ARGS: ${{ env.BUILD_ARGS }}"
+          echo "FILE_DATE=_$(date +"%Y%m%d%H%M")" >> $GITHUB_ENV
+          echo "status=success" >> ${GITHUB_OUTPUT}
+
 
       - name: 提取系统代号
         run: |
@@ -204,11 +208,11 @@ jobs:
           fi
           echo "release_code=$RELEASE_CODE" >> $GITHUB_ENV
 
-      - name: 显示结果
+      - name: 显示系统代号
         run: |
           echo "env.release_code: ${{ env.release_code }}"
 
-      - name: Build [ ${{ inputs.version }} - ${{ inputs.board }} - ${{ inputs.release }} - ${{ inputs.branch }} - ${{ inputs.system }} - ${{ inputs.rootfs }} ]
+      - name: 编译 [ ${{ inputs.version }} - ${{ inputs.board }} - ${{ inputs.release }} - ${{ inputs.branch }} - ${{ inputs.system }} - ${{ inputs.rootfs }} ]
         run: |
           pushd build
           bash ./compile.sh build BOARD=${{ inputs.board }} \
@@ -222,16 +226,16 @@ jobs:
           VENDOR=${{ inputs.vendor }}
           popd
 
-      - name: Show remaining space
+      - name: 显示剩余空间
         run: |
           df -hT ${PWD}
 
-      - name: Show images
+      - name: 显示镜像
         run: |
           ls -lh ${{ github.workspace }}/build/output/images
           echo "buildtime=$(date +"%Y.%m")" >> $GITHUB_ENV
 
-      - name: Upload images
+      - name: 上传镜像
         uses: ncipollo/release-action@main
         if: success()
         with:
@@ -242,24 +246,24 @@ jobs:
           replacesArtifacts: true
           token: ${{ secrets.GITHUB_TOKEN }}
           body: |
-            ### Armbian 镜像信息
+            ### 💿 Armbian 镜像信息
             - 💻 Armbian 版本: ${{ inputs.release }}
-            - 💻 分支：${{ inputs.branch }}
-            - 📂 源码: https://github.com/armbian/build.git
-            - 🌳 源码分支: ${{ inputs.version }}
+            - 🖥 系统分支：${{ inputs.branch }}
+            - 🗂 源码: https://github.com/armbian/build.git
+            - 🔖 源码分支: ${{ inputs.version }}
             - ⏱️ 编译时间: $(date +"%Y年%m月%d日%H时%M分")
-            - 🌐 ROOTFS 格式: ${{ inputs.rootfs }}
-            ### 🧊 设置信息
+            - 💽 ROOTFS 格式: ${{ inputs.rootfs }}
+            ### ⚙ 设置信息
             - 👤 默认用户名:  root
             - 🔒 默认密码:  1234
-            - 📒 修改 apt 源: armbian-apt
-            - 📒 配置命令: armbian-config
-            - 📒 升级命令: armbian-upgrade
-            - 📒 安装命令: armbian-install 
+            - ⌨ 修改 apt 源: armbian-apt
+            - ⌨ 配置命令: armbian-config
+            - ⌨ 升级命令: armbian-upgrade
+            - ⌨ 安装命令: armbian-install 
           draft: false
           prerelease: false
 
-      - name: 清理releases和workflows
+      - name: 清理 releases 和 workflows
         uses: danshui-git/delete-releases-workflows@main
         with:
           delete_releases: true                  # 清理releases开关，必须存在，如果不开就写false
@@ -271,7 +275,8 @@ jobs:
 
           delete_workflows: true                # 清理workflows开关，必须存在，如果不开就写false
           # workflows_keep_keyword: lede          # 清理workflows时候保留关键字符名称的runs不清理（lede 改成你需要的关键字符,不需要的就不附加此项）
-          workflows_keep_latest: 90             # 清理workflows时候排除关键字符runs外，再保留N个时间靠前的runs不清理
+          workflows_keep_latest: 10             # 清理workflows时候排除关键字符runs外，再保留N个时间靠前的runs不清理
           max_workflows_fetch: 200              # 一次最多检查多少个workflows，进行清理，设置太多的话，清理时间过长，或者会出现超时情况，按100倍数增加，最高可以设置1000（比如100、200、300...800、900、1000）
           repo: ${{ github.repository }}        # 清理仓库设置，默认为您启动本程序的自身仓库
           gh_token: ${{ secrets.REPO_TOKEN }}   # GITHUB_TOKEN，仓库密匙，必须存在
+
