@@ -261,7 +261,7 @@ jobs:
             - 🖥 系统分支：${{ inputs.branch }}
             - 🗂 源码: https://github.com/armbian/build.git
             - 🔖 源码分支: ${{ inputs.version }}
-            - ⏱️ 编译时间: $(date +"%Y年%m月%d日%H时%M分")
+            - ⏱️ 编译时间: ${{ env.FILE_DATE }}
             - 💽 ROOTFS 格式: ${{ inputs.rootfs }}
             ### ⚙ 设置信息
             - 👤 默认用户名:  root
@@ -289,6 +289,7 @@ jobs:
           max_workflows_fetch: 200              # 一次最多检查多少个workflows，进行清理，设置太多的话，清理时间过长，或者会出现超时情况，按100倍数增加，最高可以设置1000（比如100、200、300...800、900、1000）
           repo: ${{ github.repository }}        # 清理仓库设置，默认为您启动本程序的自身仓库
           gh_token: ${{ secrets.GITHUB_TOKEN }}   # GITHUB_TOKEN，仓库密匙，必须存在
+
 
 
 
