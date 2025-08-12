@@ -129,8 +129,9 @@ jobs:
       - name: 初始化编译环境
         run: |
           sudo -E apt-get -y update
-          sudo -E apt-get -y purge azure-cli ghc* zulu* llvm* firefox google* dotnet* powershell openjdk* mongodb* moby* || true
-          sudo -E apt-get -y install neofetch btrfs-progs timedatectl $(curl -fsSL https://tinyurl.com/ubuntu2204-build-armbian)
+          export DEBIAN_FRONTEND=noninteractive
+          #sudo -E apt-get -y purge azure-cli ghc* zulu* llvm* firefox google* dotnet* powershell openjdk* mongodb* moby* || true
+          sudo -E apt-get -y install neofetch btrfs-progs tzdata $(curl -fsSL https://tinyurl.com/ubuntu2204-build-armbian)
           sudo -E systemctl daemon-reload
           # sudo -E apt-get -y full-upgrade
           sudo -E apt-get -y autoremove --purge
@@ -282,6 +283,7 @@ jobs:
           max_workflows_fetch: 200              # 一次最多检查多少个workflows，进行清理，设置太多的话，清理时间过长，或者会出现超时情况，按100倍数增加，最高可以设置1000（比如100、200、300...800、900、1000）
           repo: ${{ github.repository }}        # 清理仓库设置，默认为您启动本程序的自身仓库
           gh_token: ${{ secrets.GITHUB_TOKEN }}   # GITHUB_TOKEN，仓库密匙，必须存在
+
 
 
 
