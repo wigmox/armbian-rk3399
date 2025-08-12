@@ -128,16 +128,13 @@ jobs:
 
       - name: 初始化编译环境
         run: |
-          echo "------------------------------- 更新并安装依赖 -------------------------------"
           sudo -E apt-get -y update
           sudo -E apt-get -y purge azure-cli ghc* zulu* llvm* firefox google* dotnet* powershell openjdk* mongodb* moby* || true
-          sudo -E apt-get -y install neofetch btrfs-progs $(curl -fsSL https://tinyurl.com/ubuntu2204-build-armbian)
+          sudo -E apt-get -y install neofetch btrfs-progs timedatectl $(curl -fsSL https://tinyurl.com/ubuntu2204-build-armbian)
           sudo -E systemctl daemon-reload
           # sudo -E apt-get -y full-upgrade
-          echo "------------------------------- 清理Docker镜像和软件 -------------------------------"
           sudo -E apt-get -y autoremove --purge
           sudo -E apt-get clean
-          echo "------------------------------- 设置工作目录及时区 -------------------------------"
           echo 加载 Btrfs 内核模块
           sudo modprobe btrfs
           echo 确认模块已加载
@@ -285,6 +282,7 @@ jobs:
           max_workflows_fetch: 200              # 一次最多检查多少个workflows，进行清理，设置太多的话，清理时间过长，或者会出现超时情况，按100倍数增加，最高可以设置1000（比如100、200、300...800、900、1000）
           repo: ${{ github.repository }}        # 清理仓库设置，默认为您启动本程序的自身仓库
           gh_token: ${{ secrets.GITHUB_TOKEN }}   # GITHUB_TOKEN，仓库密匙，必须存在
+
 
 
 
