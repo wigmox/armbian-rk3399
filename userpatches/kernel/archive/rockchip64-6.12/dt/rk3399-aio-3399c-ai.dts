@@ -864,9 +864,25 @@
 };
 
 // 禁用 CPU 大核高频率，否则无法启动
+
+&cluster0_opp {
+	/delete-node/ opp00;
+	/delete-node/ opp01;
+	/delete-node/ opp02;
+	/delete-node/ opp03;
+	/delete-node/ opp04;
+};
+
+//主要影响启动的是 opp05-opp08，其他不删除也能启动
+
 &cluster1_opp {
-    /delete-node/ opp05;
-    /delete-node/ opp06;
-    /delete-node/ opp07;
-    /delete-node/ opp08;
+	/delete-node/ opp00;
+	/delete-node/ opp01;
+	/delete-node/ opp02;
+	/delete-node/ opp03;
+	/delete-node/ opp04;
+	/delete-node/ opp05;
+	/delete-node/ opp06;
+	/delete-node/ opp07;
+	/delete-node/ opp08;
 };

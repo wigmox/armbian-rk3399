@@ -95,7 +95,7 @@ on:
         options:
           - ext4
           - btrfs
-        default: ext4
+        default: btrfs
 
       vendor:
         description: '源码支持'
