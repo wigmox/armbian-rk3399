@@ -159,11 +159,6 @@ jobs:
           # echo 检查内核是否支持
           grep BTRFS /boot/config-$(uname -r)
           sudo timedatectl set-timezone "$TZ"
-          timedatectl
-          echo "FILE_DATE=_$(date +"%Y%m%d%H%M")" >> $GITHUB_ENV
-          echo "status=success" >> ${GITHUB_OUTPUT}
-
-
 
       - name: 检出目标
         uses: actions/checkout@v5
@@ -204,9 +199,7 @@ jobs:
       - name: 显示选择所要编译的的系统类型
         run: |
           echo "env.BUILD_ARGS: ${{ env.BUILD_ARGS }}"
-          echo "FILE_DATE=_$(date +"%Y%m%d%H%M")" >> $GITHUB_ENV
           echo "status=success" >> ${GITHUB_OUTPUT}
-
 
       - name: 提取系统代号
         run: |
@@ -243,7 +236,7 @@ jobs:
       - name: 显示镜像
         run: |
           ls -lh ${{ github.workspace }}/build/output/images
-          echo "buildtime=$(date +"%Y.%m")" >> $GITHUB_ENV
+          echo "buildtime=$(date +"%Y.%m.%d.%H.%M")" >> $GITHUB_ENV
 
       - name: 上传镜像
         uses: ncipollo/release-action@main
@@ -261,7 +254,7 @@ jobs:
             - 🖥 系统分支：${{ inputs.branch }}
             - 🗂 源码: https://github.com/armbian/build.git
             - 🔖 源码分支: ${{ inputs.version }}
-            - ⏱️ 编译时间: ${{ env.FILE_DATE }}
+            - ⏱️ 编译时间: ${{ env.buildtime }}
             - 💽 ROOTFS 格式: ${{ inputs.rootfs }}
             ### ⚙ 设置信息
             - 👤 默认用户名:  root
