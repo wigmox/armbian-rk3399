@@ -124,10 +124,10 @@
 		pinctrl-0 = <&power_key>;
 
 		key-power {
-			debounce-interval = <100>;
 			gpios = <&gpio0 RK_PA5 GPIO_ACTIVE_LOW>;
 			label = "GPIO Key Power";
 			linux,code = <KEY_POWER>;
+			debounce-interval = <100>;
 			wakeup-source;
 		};
 	};

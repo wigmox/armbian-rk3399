@@ -124,10 +124,10 @@
 		pinctrl-0 = <&power_key>;
 
 		key-power {
-			debounce-interval = <100>;
 			gpios = <&gpio0 RK_PA5 GPIO_ACTIVE_LOW>;
 			label = "GPIO Key Power";
 			linux,code = <KEY_POWER>;
+			debounce-interval = <100>;
 			wakeup-source;
 		};
 	};
@@ -187,7 +187,8 @@
 	status = "okay";
 
 	bt656-supply = <&vcc_3v0>;		/* APIO2_VDD */
-	audio-supply = <&vcca0v9_codec>;	/* APIO5_VDD */
+	audio-supply = <&vcca1v8_codec>;
+	//audio-supply = <&vcca0v9_codec>;	/* APIO5_VDD */
 	sdmmc-supply = <&vcc_sdio>;		/* SDMMC0_VDD */
 	gpio1830-supply = <&vcc_3v0>;		/* APIO4_VDD */
 };
@@ -292,7 +293,9 @@
 				regulator-ramp-delay = <6001>;
 
 				regulator-state-mem {
-					regulator-off-in-suspend;
+				//on-900000,或者950000
+					regulator-on-in-suspend;
+					regulator-suspend-microvolt = <900000>;
 				};
 			};
 
@@ -407,17 +410,30 @@
 				};
 			};
 
-			vcca0v9_codec: LDO_REG7 {
-				regulator-name = "vcca0v9_codec";
+			vcca1v8_codec: LDO_REG7 {
+				regulator-name = "vcca1v8_codec";
 				regulator-always-on;
 				regulator-boot-on;
-				regulator-min-microvolt = <900000>;
-				regulator-max-microvolt = <900000>;
+				regulator-min-microvolt = <1800000>;
+				regulator-max-microvolt = <1800000>;
 
 				regulator-state-mem {
 					regulator-off-in-suspend;
 				};
 			};
+
+
+		//	vcca0v9_codec: LDO_REG7 {
+			//	regulator-name = "vcca0v9_codec";
+			//	regulator-always-on;
+			//	regulator-boot-on;
+			//	regulator-min-microvolt = <900000>;
+			//	regulator-max-microvolt = <900000>;
+
+			//	regulator-state-mem {
+			//		regulator-off-in-suspend;
+			//	};
+		//	};
 
 			vcc_3v0: LDO_REG8 {
 				regulator-name = "vcc_3v0";
@@ -436,7 +452,8 @@
 				regulator-name = "vcc3v3_s3";
 				regulator-always-on;
 				regulator-boot-on;
-
+				regulator-min-microvolt = <3300000>;
+				regulator-max-microvolt = <3300000>;
 				regulator-state-mem {
 					regulator-off-in-suspend;
 				};
@@ -861,28 +878,4 @@
 				<0 RK_PA4 RK_FUNC_GPIO &pcfg_pull_none>;
 		};
 	};
-};
-
-// 禁用 CPU 大核高频率，否则无法启动
-
-&cluster0_opp {
-	/delete-node/ opp00;
-	/delete-node/ opp01;
-	/delete-node/ opp02;
-	/delete-node/ opp03;
-	/delete-node/ opp04;
-};
-
-//主要影响启动的是 opp05-opp08，其他不删除也能启动
-
-&cluster1_opp {
-	/delete-node/ opp00;
-	/delete-node/ opp01;
-	/delete-node/ opp02;
-	/delete-node/ opp03;
-	/delete-node/ opp04;
-	/delete-node/ opp05;
-	/delete-node/ opp06;
-	/delete-node/ opp07;
-	/delete-node/ opp08;
 };
