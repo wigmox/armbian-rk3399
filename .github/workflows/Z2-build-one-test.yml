@@ -290,12 +290,3 @@ jobs:
           repo: ${{ github.repository }}        # 清理仓库设置，默认为您启动本程序的自身仓库
           gh_token: ${{ secrets.GITHUB_TOKEN }}   # GITHUB_TOKEN，仓库密匙，必须存在
 
-
-
-
-
-
-
-
-
-

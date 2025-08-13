@@ -106,14 +106,30 @@ on:
           - Armbian-unofficial
         default: Armbian
 
+env:
+  TZ: Asia/Shanghai
+
 jobs:
   build:
     runs-on: ubuntu-22.04
 
     steps:
 
-      - name: 检查磁盘可用空间
+      - name: 初始化信息
         run: |
+          sudo -E apt-get -y update
+          sudo -E apt-get -y install neofetch
+          neofetch --off --color_blocks off --stdout
+
+          echo -e "\033[32mCPU info:\033[0m"
+          lscpu
+
+          echo -e "\033[32mMemory info:\033[0m"
+          free -h
+
+          echo -e "\033[32mDisk space info:\033[0m"
+          df -hT ${PWD}
+
           echo "清理前的磁盘空间:"
           df -h
           sudo rm -rf /usr/local/.ghcup
@@ -126,37 +142,31 @@ jobs:
           echo "清理后的磁盘空间:"
           df -h
 
-      - name: 安装所需的软件包
+      - name: 清理并安装编译环境
         run: |
           sudo -E apt-get -y update
+          export DEBIAN_FRONTEND=noninteractive
           sudo -E apt-get -y purge azure-cli ghc* zulu* llvm* firefox google* dotnet* powershell openjdk* mongodb* moby* || true
-          sudo -E apt-get -y install neofetch btrfs-progs $(curl -fsSL https://tinyurl.com/ubuntu2204-build-armbian)
+          sudo -E apt-get -y install btrfs-progs tzdata $(curl -fsSL https://tinyurl.com/ubuntu2204-build-armbian)
           sudo -E systemctl daemon-reload
           # sudo -E apt-get -y full-upgrade
           sudo -E apt-get -y autoremove --purge
           sudo -E apt-get clean
-          echo 加载 Btrfs 内核模块
+          # echo 加载 Btrfs 内核模块
           sudo modprobe btrfs
-          echo 确认模块已加载
+          # echo 确认模块已加载
           lsmod | grep btrfs
-          echo 检查内核是否支持
+          # echo 检查内核是否支持
           grep BTRFS /boot/config-$(uname -r)
+          sudo timedatectl set-timezone "$TZ"
+          timedatectl
+          echo "FILE_DATE=_$(date +"%Y%m%d%H%M")" >> $GITHUB_ENV
+          echo "status=success" >> ${GITHUB_OUTPUT}
 
-      - name: 显示主机信息
-        run: |
-          neofetch --off --color_blocks off --stdout
 
-          echo -e "\033[32mCPU info:\033[0m"
-          lscpu
-
-          echo -e "\033[32mMemory info:\033[0m"
-          free -h
-
-          echo -e "\033[32mDisk space info:\033[0m"
-          df -hT ${PWD}
 
       - name: 检出目标
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: 检出 Armbian 源码
         run: |
@@ -251,7 +261,7 @@ jobs:
             - 🖥 系统分支：${{ inputs.branch }}
             - 🗂 源码: https://github.com/armbian/build.git
             - 🔖 源码分支: ${{ inputs.version }}
-            - ⏱️ 编译时间: $(date +"%Y年%m月%d日%H时%M分")
+            - ⏱️ 编译时间: ${{ env.FILE_DATE }}
             - 💽 ROOTFS 格式: ${{ inputs.rootfs }}
             ### ⚙ 设置信息
             - 👤 默认用户名:  root
@@ -279,6 +289,4 @@ jobs:
           max_workflows_fetch: 200              # 一次最多检查多少个workflows，进行清理，设置太多的话，清理时间过长，或者会出现超时情况，按100倍数增加，最高可以设置1000（比如100、200、300...800、900、1000）
           repo: ${{ github.repository }}        # 清理仓库设置，默认为您启动本程序的自身仓库
           gh_token: ${{ secrets.GITHUB_TOKEN }}   # GITHUB_TOKEN，仓库密匙，必须存在
-
-
 
