@@ -7,9 +7,7 @@
 #include <dt-bindings/input/linux-event-codes.h>
 #include <dt-bindings/leds/common.h>
 #include <dt-bindings/pwm/pwm.h>
-
-//CPU 调度，无法启动可以更换，或者注释掉&cluster1_opp下面的opp05、opp06、opp07、opp08
-//#include "rk3399.dtsi"
+#include "rk3399.dtsi"
 #include "rk3399-op1.dtsi"
 
 / {
@@ -190,7 +188,8 @@
 	status = "okay";
 
 	bt656-supply = <&vcc_3v0>;		/* APIO2_VDD */
-	audio-supply = <&vcca0v9_codec>;	/* APIO5_VDD */
+	audio-supply = <&vcca1v8_codec>;
+	//audio-supply = <&vcca0v9_codec>;	/* APIO5_VDD */
 	sdmmc-supply = <&vcc_sdio>;		/* SDMMC0_VDD */
 	gpio1830-supply = <&vcc_3v0>;		/* APIO4_VDD */
 };
@@ -229,13 +228,6 @@
 	status = "okay";
 	mali-supply = <&vdd_gpu>;
 };
-//禁用
-//&cluster1_opp {
-//    /delete-node/ opp05;
-//    /delete-node/ opp06;
-//    /delete-node/ opp07;
-//    /delete-node/ opp08;
-//};
 
 &vpu {
 	status = "okay";
@@ -302,7 +294,9 @@
 				regulator-ramp-delay = <6001>;
 
 				regulator-state-mem {
-					regulator-off-in-suspend;
+				//on-900000,或者950000
+					regulator-on-in-suspend;
+					regulator-suspend-microvolt = <900000>;
 				};
 			};
 
@@ -417,17 +411,30 @@
 				};
 			};
 
-			vcca0v9_codec: LDO_REG7 {
-				regulator-name = "vcca0v9_codec";
+			vcca1v8_codec: LDO_REG7 {
+				regulator-name = "vcca1v8_codec";
 				regulator-always-on;
 				regulator-boot-on;
-				regulator-min-microvolt = <900000>;
-				regulator-max-microvolt = <900000>;
+				regulator-min-microvolt = <1800000>;
+				regulator-max-microvolt = <1800000>;
 
 				regulator-state-mem {
 					regulator-off-in-suspend;
 				};
 			};
+
+
+		//	vcca0v9_codec: LDO_REG7 {
+			//	regulator-name = "vcca0v9_codec";
+			//	regulator-always-on;
+			//	regulator-boot-on;
+			//	regulator-min-microvolt = <900000>;
+			//	regulator-max-microvolt = <900000>;
+
+			//	regulator-state-mem {
+			//		regulator-off-in-suspend;
+			//	};
+		//	};
 
 			vcc_3v0: LDO_REG8 {
 				regulator-name = "vcc_3v0";
@@ -446,7 +453,8 @@
 				regulator-name = "vcc3v3_s3";
 				regulator-always-on;
 				regulator-boot-on;
-
+				regulator-min-microvolt = <3300000>;
+				regulator-max-microvolt = <3300000>;
 				regulator-state-mem {
 					regulator-off-in-suspend;
 				};
@@ -576,12 +584,13 @@
 };
 
 &emmc_phy {
+	rockchip,enable-strobe-pulldown;
 	status = "okay";
 };
 
 &sdhci {
 	status = "okay";
-	//max-frequency = <150000000>;
+	max-frequency = <150000000>;
 	bus-width = <8>;
 	//mmc-hs200-1_8v;
 	mmc-hs400-1_8v;

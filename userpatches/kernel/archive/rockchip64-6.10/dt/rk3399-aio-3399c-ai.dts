@@ -7,6 +7,7 @@
 #include <dt-bindings/input/linux-event-codes.h>
 #include <dt-bindings/leds/common.h>
 #include <dt-bindings/pwm/pwm.h>
+#include "rk3399.dtsi"
 #include "rk3399-op1.dtsi"
 
 / {
@@ -187,7 +188,8 @@
 	status = "okay";
 
 	bt656-supply = <&vcc_3v0>;		/* APIO2_VDD */
-	audio-supply = <&vcca0v9_codec>;	/* APIO5_VDD */
+	audio-supply = <&vcca1v8_codec>;
+	//audio-supply = <&vcca0v9_codec>;	/* APIO5_VDD */
 	sdmmc-supply = <&vcc_sdio>;		/* SDMMC0_VDD */
 	gpio1830-supply = <&vcc_3v0>;		/* APIO4_VDD */
 };
@@ -292,7 +294,9 @@
 				regulator-ramp-delay = <6001>;
 
 				regulator-state-mem {
-					regulator-off-in-suspend;
+				//on-900000,或者950000
+					regulator-on-in-suspend;
+					regulator-suspend-microvolt = <900000>;
 				};
 			};
 
@@ -407,17 +411,30 @@
 				};
 			};
 
-			vcca0v9_codec: LDO_REG7 {
-				regulator-name = "vcca0v9_codec";
+			vcca1v8_codec: LDO_REG7 {
+				regulator-name = "vcca1v8_codec";
 				regulator-always-on;
 				regulator-boot-on;
-				regulator-min-microvolt = <900000>;
-				regulator-max-microvolt = <900000>;
+				regulator-min-microvolt = <1800000>;
+				regulator-max-microvolt = <1800000>;
 
 				regulator-state-mem {
 					regulator-off-in-suspend;
 				};
 			};
+
+
+		//	vcca0v9_codec: LDO_REG7 {
+			//	regulator-name = "vcca0v9_codec";
+			//	regulator-always-on;
+			//	regulator-boot-on;
+			//	regulator-min-microvolt = <900000>;
+			//	regulator-max-microvolt = <900000>;
+
+			//	regulator-state-mem {
+			//		regulator-off-in-suspend;
+			//	};
+		//	};
 
 			vcc_3v0: LDO_REG8 {
 				regulator-name = "vcc_3v0";
@@ -436,7 +453,8 @@
 				regulator-name = "vcc3v3_s3";
 				regulator-always-on;
 				regulator-boot-on;
-
+				regulator-min-microvolt = <3300000>;
+				regulator-max-microvolt = <3300000>;
 				regulator-state-mem {
 					regulator-off-in-suspend;
 				};
