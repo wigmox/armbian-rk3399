@@ -236,7 +236,7 @@ jobs:
       - name: 显示镜像
         run: |
           ls -lh ${{ github.workspace }}/build/output/images
-          echo "buildtime=$(date +"%Y.%m.%d.%H.%M")" >> $GITHUB_ENV
+          echo "buildtime=$(date +"%Y%m%d%H%M")" >> $GITHUB_ENV
 
       - name: 上传镜像
         uses: ncipollo/release-action@main
@@ -270,7 +270,7 @@ jobs:
         uses: ophub/delete-releases-workflows@main
         with:
           delete_releases: true                  # 清理releases开关，必须存在，如果不开就写false
-          prerelease_option: all                 # 设置清理releases是否区分预发行版本
+          prerelease_option: 全部                 # 设置清理releases是否区分预发行版本
           # releases_keep_keyword: targz/Update    # 清理releases时候保留关键字符名称的tags不清理（targz/Update 改成你需要的关键字符,不需要的就不附加此项）
           releases_keep_latest: 10               # 清理releases时候排除关键字符tags外，再保留N个时间靠前的发布不清理
           delete_tags: true                      # 清理releases时候清理tags，一般都开启同步清理的
@@ -279,3 +279,4 @@ jobs:
           workflows_keep_day: 10             # 清理workflows时候排除关键字符runs外，再保留N个时间靠前的runs不清理
           repo: ${{ github.repository }}        # 清理仓库设置，默认为您启动本程序的自身仓库
           gh_token: ${{ secrets.GITHUB_TOKEN }}   # GITHUB_TOKEN，仓库密匙，必须存在
+
