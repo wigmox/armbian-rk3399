@@ -276,6 +276,6 @@ jobs:
           delete_tags: true                      # 清理releases时候清理tags，一般都开启同步清理的
           delete_workflows: true                # 清理workflows开关，必须存在，如果不开就写false
           # workflows_keep_keyword: lede          # 清理workflows时候保留关键字符名称的runs不清理（lede 改成你需要的关键字符,不需要的就不附加此项）
-          workflows_keep_latest: 10             # 清理workflows时候排除关键字符runs外，再保留N个时间靠前的runs不清理
+          workflows_keep_day: 10             # 清理workflows时候排除关键字符runs外，再保留N个时间靠前的runs不清理
           repo: ${{ github.repository }}        # 清理仓库设置，默认为您启动本程序的自身仓库
           gh_token: ${{ secrets.GITHUB_TOKEN }}   # GITHUB_TOKEN，仓库密匙，必须存在
