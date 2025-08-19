@@ -23,7 +23,7 @@ on:
         default: "aio-3399c-ai"
 
       version:
-        description: 'Armbian 版本 (选择带 .y 的版本会自动匹配该系列的最新 tag)'
+        description: 'Armbian 版本 (选择带 .y 的自动匹配最新 tag)'
         required: true
         type: choice
         options:
@@ -268,7 +268,7 @@ jobs:
         run: |
           pushd build
           bash ./compile.sh build BOARD=${{ inputs.board }} \
-          BRANCH=${{ env.ARMBIAN_VERSION }} \
+          BRANCH=${{ inputs.branch }} \
           ${{ env.BUILD_ARGS }} \
           KERNEL_CONFIGURE=no \
           RELEASE=${{ env.release_code }} \
@@ -285,7 +285,7 @@ jobs:
       - name: 显示镜像
         run: |
           ls -lh ${{ github.workspace }}/build/output/images
-          echo "buildtime=$(date +"%Y.%m.%d.%H.%M")" >> $GITHUB_ENV
+          echo "buildtime=$(date +"%Y%m%d%H%M")" >> $GITHUB_ENV
 
       - name: 上传镜像
         uses: ncipollo/release-action@main
@@ -299,7 +299,8 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           body: |
             ### 💿 Armbian 镜像信息
-            - 💻 Armbian 版本: ${{ inputs.release }}
+            - 💻 设备型号:${{ inputs.board }}
+            - 🖥 Armbian 版本: ${{ inputs.release }}
             - 🖥 系统分支：${{ inputs.branch }}
             - 🗂 源码: https://github.com/armbian/build.git
             - 🔖 源码分支: ${{ env.ARMBIAN_VERSION }}
