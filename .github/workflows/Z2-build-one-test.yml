@@ -23,7 +23,7 @@ on:
         default: "aio-3399c-ai"
 
       version:
-        description: 'Armbian 版本 (选择带 .y 的自动匹配最新 tag)'
+        description: 'Armbian 版本 (带 .y 匹配最新 tag)'
         required: true
         type: choice
         options:
@@ -34,7 +34,7 @@ on:
           - v25.8.y
           - v25.11.y
           - main
-        default: v25.8.y
+        default: v25.11.y
 
       branch:
         description: '系统分支'
@@ -170,7 +170,7 @@ jobs:
         id: version_selector
         run: |
           USER_CHOICE="${{ inputs.version }}"
-          BRANCH_VERSION=""
+          ARMBIAN_VERSION=""
 
           # 判断用户选择的是否是动态版本 (以 .y 结尾)
           if [[ "$USER_CHOICE" == *.y ]]; then
@@ -187,8 +187,8 @@ jobs:
             LATEST_STABLE_TAG=$(echo "${ALL_TAGS}" | grep "refs/tags/${VERSION_PREFIX}" | grep -v "trunk" | head -n 1 | sed 's/.*\///')
             
             if [[ -n "$LATEST_STABLE_TAG" ]]; then
-              BRANCH_VERSION="$LATEST_STABLE_TAG"
-              echo "找到最新的稳定版 tag: ${BRANCH_VERSION}"
+              ARMBIAN_VERSION="$LATEST_STABLE_TAG"
+              echo "找到最新的稳定版 tag: ${ARMBIAN_VERSION}"
             else
               # 2. 如果没有稳定版，则查找最新的 trunk 版
               # 格式类似: v25.8.0-trunk.1, v25.8.0-trunk.2
@@ -196,8 +196,8 @@ jobs:
               LATEST_TRUNK_TAG=$(echo "${ALL_TAGS}" | grep "refs/tags/${VERSION_PREFIX}" | grep "trunk" | head -n 1 | sed 's/.*\///')
 
               if [[ -n "$LATEST_TRUNK_TAG" ]]; then
-                BRANCH_VERSION="$LATEST_TRUNK_TAG"
-                echo "找到最新的 trunk 版 tag: ${BRANCH_VERSION}"
+                ARMBIAN_VERSION="$LATEST_TRUNK_TAG"
+                echo "找到最新的 trunk 版 tag: ${ARMBIAN_VERSION}"
               else
                 echo "::error:: 无法为前缀 ${VERSION_PREFIX} 找到任何匹配的 tag！"
                 exit 1
@@ -205,16 +205,16 @@ jobs:
             fi
           else
             # 如果用户选择的是一个固定版本 (如 v24.11 或 main)，直接使用
-            BRANCH_VERSION="$USER_CHOICE"
-            echo "用户选择了固定版本: ${BRANCH_VERSION}"
+            ARMBIAN_VERSION="$USER_CHOICE"
+            echo "用户选择了固定版本: ${ARMBIAN_VERSION}"
           fi
 
           # 将最终确定的版本号输出到 GITHUB_ENV，供后续步骤使用
-          echo "ARMBIAN_VERSION=${BRANCH_VERSION}" >> $GITHUB_ENV
+          echo "armbian_version=${ARMBIAN_VERSION}" >> $GITHUB_ENV
 
       - name: 检出 Armbian 源码
         run: |
-          git clone -q --single-branch --depth=1 --branch=${{ env.ARMBIAN_VERSION }} $REPO_URL
+          git clone -q --single-branch --depth=1 --branch=${{ env.armbian_version }} $REPO_URL
 
       - name: 复制 USERPATCHES 内容到源码根目录
         run: |
@@ -264,7 +264,7 @@ jobs:
         run: |
           echo "env.release_code: ${{ env.release_code }}"
 
-      - name: 编译 [ ${{ env.ARMBIAN_VERSION }} - ${{ inputs.board }} - ${{ inputs.release }} - ${{ inputs.branch }} - ${{ inputs.system }} - ${{ inputs.rootfs }} ]
+      - name: 编译 [ ${{ env.armbian_version }} - ${{ inputs.board }} - ${{ inputs.release }} - ${{ inputs.branch }} - ${{ inputs.system }} - ${{ inputs.rootfs }} ]
         run: |
           pushd build
           bash ./compile.sh build BOARD=${{ inputs.board }} \
@@ -303,7 +303,7 @@ jobs:
             - 🖥 Armbian 版本: ${{ inputs.release }}
             - 🖥 系统分支：${{ inputs.branch }}
             - 🗂 源码: https://github.com/armbian/build.git
-            - 🔖 源码分支: ${{ env.ARMBIAN_VERSION }}
+            - 🔖 源码分支: ${{ env.armbian_version }}
             - ⏱️ 编译时间: ${{ env.buildtime }}
             - 💽 ROOTFS 格式: ${{ inputs.rootfs }}
             ### ⚙ 设置信息
