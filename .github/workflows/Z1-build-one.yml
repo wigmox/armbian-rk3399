@@ -1,4 +1,4 @@
-name: Z2-build-one-test
+name: Z1-build-one
 
 on:
   workflow_dispatch:
