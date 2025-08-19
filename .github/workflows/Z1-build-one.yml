@@ -250,7 +250,8 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           body: |
             ### 💿 Armbian 镜像信息
-            - 💻 Armbian 版本: ${{ inputs.release }}
+            - 💻 设备型号:${{ inputs.board }}
+            - 🖥 Armbian 版本: ${{ inputs.release }}
             - 🖥 系统分支：${{ inputs.branch }}
             - 🗂 源码: https://github.com/armbian/build.git
             - 🔖 源码分支: ${{ inputs.version }}
