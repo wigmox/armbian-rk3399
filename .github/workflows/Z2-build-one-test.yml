@@ -109,6 +109,7 @@ on:
 
 env:
   TZ: Asia/Shanghai
+  REPO_URL: https://github.com/armbian/build.git
 
 jobs:
   build:
@@ -168,8 +169,8 @@ jobs:
       - name: 判断要使用的 Armbian 版本
         id: version_selector
         run: |
-          USER_CHOICE="${{ inputs.branch }}"
-          FINAL_VERSION=""
+          USER_CHOICE="${{ inputs.version }}"
+          BRANCH_VERSION=""
 
           # 判断用户选择的是否是动态版本 (以 .y 结尾)
           if [[ "$USER_CHOICE" == *.y ]]; then
@@ -179,15 +180,15 @@ jobs:
 
             # 从 Armbian 远程仓库获取所有 tags，并按版本号逆序排序 (最新版本在最前面)
             # 使用 `git ls-remote` 可以在不克隆整个仓库的情况下获取 tags，速度非常快
-            ALL_TAGS=$(git ls-remote --tags --sort='-v:refname' https://github.com/armbian/build.git)
+            ALL_TAGS=$(git ls-remote --tags --sort='-v:refname' $REPO_URL)
 
             # 1. 优先查找稳定版 (不含 "trunk")
             # 格式类似: v25.8.1
             LATEST_STABLE_TAG=$(echo "${ALL_TAGS}" | grep "refs/tags/${VERSION_PREFIX}" | grep -v "trunk" | head -n 1 | sed 's/.*\///')
             
             if [[ -n "$LATEST_STABLE_TAG" ]]; then
-              FINAL_VERSION="$LATEST_STABLE_TAG"
-              echo "找到最新的稳定版 tag: ${FINAL_VERSION}"
+              BRANCH_VERSION="$LATEST_STABLE_TAG"
+              echo "找到最新的稳定版 tag: ${BRANCH_VERSION}"
             else
               # 2. 如果没有稳定版，则查找最新的 trunk 版
               # 格式类似: v25.8.0-trunk.1, v25.8.0-trunk.2
@@ -195,8 +196,8 @@ jobs:
               LATEST_TRUNK_TAG=$(echo "${ALL_TAGS}" | grep "refs/tags/${VERSION_PREFIX}" | grep "trunk" | head -n 1 | sed 's/.*\///')
 
               if [[ -n "$LATEST_TRUNK_TAG" ]]; then
-                FINAL_VERSION="$LATEST_TRUNK_TAG"
-                echo "找到最新的 trunk 版 tag: ${FINAL_VERSION}"
+                BRANCH_VERSION="$LATEST_TRUNK_TAG"
+                echo "找到最新的 trunk 版 tag: ${BRANCH_VERSION}"
               else
                 echo "::error:: 无法为前缀 ${VERSION_PREFIX} 找到任何匹配的 tag！"
                 exit 1
@@ -204,16 +205,16 @@ jobs:
             fi
           else
             # 如果用户选择的是一个固定版本 (如 v24.11 或 main)，直接使用
-            FINAL_VERSION="$USER_CHOICE"
-            echo "用户选择了固定版本: ${FINAL_VERSION}"
+            BRANCH_VERSION="$USER_CHOICE"
+            echo "用户选择了固定版本: ${BRANCH_VERSION}"
           fi
 
           # 将最终确定的版本号输出到 GITHUB_ENV，供后续步骤使用
-          echo "ARMBIAN_VERSION=${FINAL_VERSION}" >> $GITHUB_ENV
+          echo "ARMBIAN_VERSION=${BRANCH_VERSION}" >> $GITHUB_ENV
 
       - name: 检出 Armbian 源码
         run: |
-          git clone -q --single-branch --depth=1 --branch=${{ inputs.version }} https://github.com/armbian/build.git
+          git clone -q --single-branch --depth=1 --branch=${{ inputs.version }} $REPO_URL
 
       - name: 复制 USERPATCHES 内容到源码根目录
         run: |
