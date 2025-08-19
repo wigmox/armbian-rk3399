@@ -23,17 +23,18 @@ on:
         default: "aio-3399c-ai"
 
       version:
-        description: 'Armbian 版本'
+        description: 'Armbian 版本 (选择带 .y 的版本会自动匹配该系列的最新 tag)'
         required: true
         type: choice
         options:
           - v24.11
           - v25.02
-          - v25.05
-          - v25.8.0-trunk.460
-          - v25.11.0-trunk.3
+          - v25.2.y
+          - v25.5.y
+          - v25.8.y
+          - v25.11.y
           - main
-        default: v25.02
+        default: v25.8.y
 
       branch:
         description: '系统分支'
@@ -163,6 +164,53 @@ jobs:
       - name: 检出目标
         uses: actions/checkout@v5
 
+      # 判断并确定最终要使用的 Armbian 版本
+      - name: 判断要使用的 Armbian 版本
+        id: version_selector
+        run: |
+          USER_CHOICE="${{ inputs.branch }}"
+          FINAL_VERSION=""
+
+          # 判断用户选择的是否是动态版本 (以 .y 结尾)
+          if [[ "$USER_CHOICE" == *.y ]]; then
+            # 移除 .y 后缀，得到版本前缀, e.g., "v25.8"
+            VERSION_PREFIX=$(echo "$USER_CHOICE" | sed 's/\.y$//')
+            echo "用户选择了动态版本，开始查找前缀为 ${VERSION_PREFIX} 的最新 tag..."
+
+            # 从 Armbian 远程仓库获取所有 tags，并按版本号逆序排序 (最新版本在最前面)
+            # 使用 `git ls-remote` 可以在不克隆整个仓库的情况下获取 tags，速度非常快
+            ALL_TAGS=$(git ls-remote --tags --sort='-v:refname' https://github.com/armbian/build.git)
+
+            # 1. 优先查找稳定版 (不含 "trunk")
+            # 格式类似: v25.8.1
+            LATEST_STABLE_TAG=$(echo "${ALL_TAGS}" | grep "refs/tags/${VERSION_PREFIX}" | grep -v "trunk" | head -n 1 | sed 's/.*\///')
+            
+            if [[ -n "$LATEST_STABLE_TAG" ]]; then
+              FINAL_VERSION="$LATEST_STABLE_TAG"
+              echo "找到最新的稳定版 tag: ${FINAL_VERSION}"
+            else
+              # 2. 如果没有稳定版，则查找最新的 trunk 版
+              # 格式类似: v25.8.0-trunk.1, v25.8.0-trunk.2
+              echo "未找到 ${VERSION_PREFIX} 系列的稳定版，开始查找最新的 trunk 版..."
+              LATEST_TRUNK_TAG=$(echo "${ALL_TAGS}" | grep "refs/tags/${VERSION_PREFIX}" | grep "trunk" | head -n 1 | sed 's/.*\///')
+
+              if [[ -n "$LATEST_TRUNK_TAG" ]]; then
+                FINAL_VERSION="$LATEST_TRUNK_TAG"
+                echo "找到最新的 trunk 版 tag: ${FINAL_VERSION}"
+              else
+                echo "::error:: 无法为前缀 ${VERSION_PREFIX} 找到任何匹配的 tag！"
+                exit 1
+              fi
+            fi
+          else
+            # 如果用户选择的是一个固定版本 (如 v24.11 或 main)，直接使用
+            FINAL_VERSION="$USER_CHOICE"
+            echo "用户选择了固定版本: ${FINAL_VERSION}"
+          fi
+
+          # 将最终确定的版本号输出到 GITHUB_ENV，供后续步骤使用
+          echo "ARMBIAN_VERSION=${FINAL_VERSION}" >> $GITHUB_ENV
+
       - name: 检出 Armbian 源码
         run: |
           git clone -q --single-branch --depth=1 --branch=${{ inputs.version }} https://github.com/armbian/build.git
@@ -219,7 +267,7 @@ jobs:
         run: |
           pushd build
           bash ./compile.sh build BOARD=${{ inputs.board }} \
-          BRANCH=${{ inputs.branch }} \
+          BRANCH=${{ env.ARMBIAN_VERSION }} \
           ${{ env.BUILD_ARGS }} \
           KERNEL_CONFIGURE=no \
           RELEASE=${{ env.release_code }} \
