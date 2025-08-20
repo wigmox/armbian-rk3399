@@ -5,7 +5,7 @@ on:
     inputs:
 
       rkdevflash:
-        description: '编译 Rockchip 镜像'
+        description: '编译 Rockchip 专属线刷镜像'
         required: false
         type: boolean
         default: false
@@ -179,6 +179,7 @@ jobs:
       - name: 设置系统类型
         env:
           DESKTOP_APPGROUPS: "browsers chat desktop_tools editors email internet multimedia office programming remote_desktop"
+          DESKTOP_NAME: "${{ inputs.system }}#desktop-"
         run: |
           if [ "${{ inputs.system }}" == "minimal" ]; then
             echo "Setting up for minimal system..."
@@ -191,9 +192,9 @@ jobs:
             echo "Setting up for a desktop system..."
             # 从输入值（例如 "desktop-xfce"）中提取桌面名称（"xfce"）
             # 使用了 shell 参数扩展，移除 "desktop-" 前缀
-            DESKTOP_NAME="${{ inputs.system }}#desktop-"
+            
             # 使用提取出的桌面名称动态构建参数字符串
-            SYSTEM_ARGS="BUILD_DESKTOP=yes BUILD_MINIMAL=no DESKTOP_ENVIRONMENT=${DESKTOP_NAME} \
+            SYSTEM_ARGS="BUILD_DESKTOP=yes BUILD_MINIMAL=no DESKTOP_ENVIRONMENT="${{ env.DESKTOP_NAME }}" \
                          DESKTOP_ENVIRONMENT_CONFIG_NAME=config_base \
                          DESKTOP_APPGROUPS_SELECTED=\"${{ env.DESKTOP_APPGROUPS }}\""
                          
@@ -220,7 +221,7 @@ jobs:
         run: |
           echo "env.release_code: ${{ env.release_code }}"
 
-      - name: 编译 Rockchip 镜像
+      - name: 编译 Rockchip 专属线刷镜像
         run: |
           EXT_FLAG=""
           if ${{ inputs.rkdevflash }}; then
