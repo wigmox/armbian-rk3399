@@ -101,8 +101,8 @@ on:
         required: false
         type: choice
         options:
-          - yes
-          - no
+          - 'yes'
+          - 'no'
         default: 'yes'
 
       vendor:
@@ -179,6 +179,7 @@ jobs:
           DESKTOP_APPGROUPS: "browsers chat desktop_tools editors email internet multimedia office programming remote_desktop"
           
         run: |
+
           # 检查输入是否以 "desktop-" 开头
           if [[ "$INPUTS_SYSTEM" == desktop-* ]]; then
             echo "设置桌面类型"

@@ -95,8 +95,8 @@ on:
         required: false
         type: choice
         options:
-          - yes
-          - no
+          - 'yes'
+          - 'no'
         default: 'yes'
 
       vendor:
