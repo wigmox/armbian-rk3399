@@ -194,7 +194,7 @@ jobs:
             DESKTOP_NAME=$(echo "${{ inputs.system }}" | sed 's/^desktop-//')
             echo "桌面类型: ${DESKTOP_NAME}"
             # 使用提取出的桌面名称动态构建参数字符串
-            SYSTEM_ARGS="BUILD_DESKTOP=yes BUILD_MINIMAL=no DESKTOP_ENVIRONMENT="${{ env.DESKTOP_NAME }}" \
+            SYSTEM_ARGS="BUILD_DESKTOP=yes BUILD_MINIMAL=no DESKTOP_ENVIRONMENT=${DESKTOP_NAME} \
                          DESKTOP_ENVIRONMENT_CONFIG_NAME=config_base \
                          DESKTOP_APPGROUPS_SELECTED=\"${{ env.DESKTOP_APPGROUPS }}\""
                          
