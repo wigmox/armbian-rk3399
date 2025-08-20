@@ -103,7 +103,7 @@ on:
         options:
           - yes
           - no
-        default: yes
+        default: 'yes'
 
       vendor:
         description: '源码支持'
@@ -179,19 +179,15 @@ jobs:
           DESKTOP_APPGROUPS: "browsers chat desktop_tools editors email internet multimedia office programming remote_desktop"
           
         run: |
-          INPUTS_SYSTEM="${{ inputs.system }}"
-
           # 检查输入是否以 "desktop-" 开头
           if [[ "$INPUTS_SYSTEM" == desktop-* ]]; then
             echo "设置桌面类型"
-            # 使用 sed 命令来删除 "desktop-" 前缀
-            # DESKTOP_NAME=$(echo "$INPUTS_SYSTEM" | sed 's/^desktop-//' || echo "")
             DESKTOP_NAME=$(echo "${{ inputs.system }}"  | awk -F'desktop-' '{gsub(/^[ \t]+|[ \t]+$/, "", $2); print tolower($2)}')
             echo "桌面类型: ${DESKTOP_NAME}"
             # 使用提取出的桌面名称动态构建参数字符串
             SYSTEM_ARGS="BUILD_DESKTOP=yes BUILD_MINIMAL=no DESKTOP_ENVIRONMENT=${DESKTOP_NAME} \
-                         DESKTOP_ENVIRONMENT_CONFIG_NAME=config_base \
-                         DESKTOP_APPGROUPS_SELECTED=\"${{ env.DESKTOP_APPGROUPS }}\""
+                  DESKTOP_ENVIRONMENT_CONFIG_NAME=config_base \
+                  DESKTOP_APPGROUPS_SELECTED=\"${{ env.DESKTOP_APPGROUPS }}\""
           # 非桌面版
           elif [ "${{ inputs.system }}" == "minimal" ]; then
             echo "Setting up for minimal system..."
@@ -293,7 +289,7 @@ jobs:
       - name: 编译 [ ${{ env.armbian_version }} - ${{ inputs.board }} - ${{ inputs.release }} - ${{ inputs.branch }} - ${{ inputs.system }} - ${{ inputs.rootfs }} ]
         run: |
           pushd build
-          bash ./compile.sh build BOARD=${{ inputs.board }} \
+          sudo -E bash ./compile.sh build BOARD=${{ inputs.board }} \
           BRANCH=${{ inputs.branch }} \
           ${{ env.BUILD_ARGS }} \
           KERNEL_CONFIGURE=no \
