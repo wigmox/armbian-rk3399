@@ -282,7 +282,7 @@ jobs:
       - name: 编译 [ ${{ env.armbian_version }} - ${{ inputs.board }} - ${{ inputs.release }} - ${{ inputs.branch }} - ${{ inputs.system }} - ${{ inputs.rootfs }} ]
         run: |
           pushd build
-          bash ./compile.sh build BOARD=${{ inputs.board }} \
+          bash sudo ./compile.sh build BOARD=${{ inputs.board }} \
           BRANCH=${{ inputs.branch }} \
           ${{ env.BUILD_ARGS }} \
           KERNEL_CONFIGURE=no \
