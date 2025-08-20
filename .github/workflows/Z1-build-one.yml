@@ -78,17 +78,6 @@ on:
           - desktop-i3-wm
         default: minimal
 
-      desktop:
-        description: '桌面类型（如果系统类型选择桌面）'
-        required: false
-        type: choice
-        options:
-          - xfce
-          - cinnamon
-          - gnome
-          - i3-wm
-        default: xfce
-
       bspfreeze:
         description: '冻结 BSP'
         required: false
@@ -106,6 +95,15 @@ on:
           - ext4
           - btrfs
         default: btrfs
+
+      extrawifi:
+        description: '编译 WIFI 驱动'
+        required: false
+        type: choice
+        options:
+          - yes
+          - no
+        default: yes
 
       vendor:
         description: '源码支持'
@@ -183,10 +181,9 @@ jobs:
         run: |
 
           # 检查输入是否以 "desktop-" 开头
-          if [ "${{ inputs.system }}" == "desktop-"* ]; then
+          if [ "${{ inputs.system }}" == "desktop-*" ]; then
             echo "Setting up for a desktop system..."
             # 使用 sed 命令来删除 "desktop-" 前缀
-            # DESKTOP_NAME="${SYSTEM_TYPE#desktop-}"
             DESKTOP_NAME=$(echo "${{ inputs.system }}" | awk '{sub(/^desktop-/,"")}1')
             # DESKTOP_NAME=$(echo "${{ inputs.system }}" | sed 's/^desktop-//' || echo "")
             echo "桌面类型: ${DESKTOP_NAME}"
@@ -305,6 +302,7 @@ jobs:
           ROOTFS_TYPE=${{ inputs.rootfs }} \
           EXT=${{ env.ext_flag }} \
           VENDOR=${{ inputs.vendor }} \
+          EXTRAWIFI=${{ inputs.extrawifi }} \
           NETWORKING_STACK=network-manager
           popd
 
