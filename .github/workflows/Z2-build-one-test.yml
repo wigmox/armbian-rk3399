@@ -221,7 +221,6 @@ jobs:
 
   - name: 编译 Rockchip 镜像
     run: |
-      pushd build
       EXT_FLAG=""
       if ${{ inputs.rkdevflash }}; then
         EXT_FLAG="EXT=rkdevflash"
