@@ -181,15 +181,9 @@ jobs:
           DESKTOP_APPGROUPS: "browsers chat desktop_tools editors email internet multimedia office programming remote_desktop"
           
         run: |
-          if [ "${{ inputs.system }}" == "minimal" ]; then
-            echo "Setting up for minimal system..."
-            SYSTEM_ARGS="BUILD_DESKTOP=no BUILD_MINIMAL=yes"
-          elif [ "${{ inputs.system }}" == "server" ]; then
-            echo "Setting up for server system..."
-            SYSTEM_ARGS="BUILD_DESKTOP=no BUILD_MINIMAL=no"
-            
+
           # 检查输入是否以 "desktop-" 开头
-          elif [ "${{ inputs.system }}" == "desktop-"* ]; then
+          if [ "${{ inputs.system }}" == "desktop-"* ]; then
             echo "Setting up for a desktop system..."
             # 使用 sed 命令来删除 "desktop-" 前缀
             # DESKTOP_NAME="${SYSTEM_TYPE#desktop-}"
@@ -200,6 +194,13 @@ jobs:
             SYSTEM_ARGS="BUILD_DESKTOP=yes BUILD_MINIMAL=no DESKTOP_ENVIRONMENT=${DESKTOP_NAME} \
                          DESKTOP_ENVIRONMENT_CONFIG_NAME=config_base \
                          DESKTOP_APPGROUPS_SELECTED=\"${{ env.DESKTOP_APPGROUPS }}\""
+          # 非桌面版
+          elif [ "${{ inputs.system }}" == "minimal" ]; then
+            echo "Setting up for minimal system..."
+            SYSTEM_ARGS="BUILD_DESKTOP=no BUILD_MINIMAL=yes"
+          elif [ "${{ inputs.system }}" == "server" ]; then
+            echo "Setting up for server system..."
+            SYSTEM_ARGS="BUILD_DESKTOP=no BUILD_MINIMAL=no"
           fi
           echo "BUILD_ARGS=$SYSTEM_ARGS" >> $GITHUB_ENV
 
