@@ -214,7 +214,7 @@ jobs:
         run: |
           EXT_FLAG=""
           if ${{ inputs.rkdevflash }}; then
-          EXT_FLAG="EXT=rkdevflash"
+          EXT_FLAG="rkdevflash \PREFER_DOCKER=no"
           echo "ext_flag=$EXT_FLAG" >> $GITHUB_ENV
           fi
 
@@ -292,7 +292,6 @@ jobs:
           ROOTFS_TYPE=${{ inputs.rootfs }} \
           EXT=${{ env.ext_flag }} \
           VENDOR=${{ inputs.vendor }} \
-          EXTRAWIFI=yes \
           NETWORKING_STACK=network-manager
           popd
 
