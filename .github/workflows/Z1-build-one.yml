@@ -193,12 +193,12 @@ jobs:
             echo "Setting up for a desktop system..."
             # 使用 sed 命令来删除 "desktop-" 前缀
             
-            if [[ "$SYSTEM_TYPE" =~ ^desktop- ]]; then
-              DESKTOP_NAME=$(echo "$SYSTEM_TYPE" | sed 's/^desktop-//' || echo "")
+            if [[ "${{ inputs.system }}" =~ ^desktop- ]]; then
+              DESKTOP_NAME=$(echo "${{ inputs.system }}" | sed 's/^desktop-//' || echo "")
             fi
             
             # DESKTOP_NAME="${SYSTEM_TYPE#desktop-}"
-            # DESKTOP_NAME=$(echo "$SYSTEM_TYPE" | awk '{sub(/^desktop-/,"")}1')
+            # DESKTOP_NAME=$(echo "${{ inputs.system }}" | awk '{sub(/^desktop-/,"")}1')
             # DESKTOP_NAME=$(echo "${{ inputs.system }}" | sed 's/^desktop-//')
             echo "桌面类型: ${DESKTOP_NAME}"
             # 使用提取出的桌面名称动态构建参数字符串
