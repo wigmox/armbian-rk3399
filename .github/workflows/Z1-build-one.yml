@@ -72,7 +72,10 @@ on:
         options:
           - minimal
           - server
-          - desktop
+          - desktop-xfce
+          - desktop-cinnamon
+          - desktop-gnome
+          - desktop-i3-wm
         default: minimal
 
       desktop:
@@ -183,11 +186,18 @@ jobs:
           elif [ "${{ inputs.system }}" == "server" ]; then
             echo "Setting up for server system..."
             SYSTEM_ARGS="BUILD_DESKTOP=no BUILD_MINIMAL=no"
-          elif [ "${{ inputs.system }}" == "desktop" ]; then
-            echo "Setting up for desktop system..."
-            SYSTEM_ARGS="BUILD_DESKTOP=yes BUILD_MINIMAL=no DESKTOP_ENVIRONMENT=${{ inputs.desktop }} \
-                  DESKTOP_ENVIRONMENT_CONFIG_NAME=config_base \
-                  DESKTOP_APPGROUPS_SELECTED=\"${{ env.DESKTOP_APPGROUPS }}\""
+          # 检查输入是否以 "desktop-" 开头
+          elif [ "${{ inputs.system }}" == "desktop-"* ]; then
+            echo "Setting up for a desktop system..."
+            # 从输入值（例如 "desktop-xfce"）中提取桌面名称（"xfce"）
+            # 使用了 shell 参数扩展，移除 "desktop-" 前缀
+            DESKTOP_NAME="${{ inputs.system }}#desktop-"
+            # 使用提取出的桌面名称动态构建参数字符串
+            SYSTEM_ARGS="BUILD_DESKTOP=yes BUILD_MINIMAL=no DESKTOP_ENVIRONMENT=${DESKTOP_NAME} \
+                         DESKTOP_ENVIRONMENT_CONFIG_NAME=config_base \
+                         DESKTOP_APPGROUPS_SELECTED=\"${{ env.DESKTOP_APPGROUPS }}\""
+                         
+            echo "BUILD_ARGS=$SYSTEM_ARGS" >> $GITHUB_ENV
           fi
           echo "BUILD_ARGS=$SYSTEM_ARGS" >> $GITHUB_ENV
 
@@ -282,7 +292,7 @@ jobs:
       - name: 编译 [ ${{ env.armbian_version }} - ${{ inputs.board }} - ${{ inputs.release }} - ${{ inputs.branch }} - ${{ inputs.system }} - ${{ inputs.rootfs }} ]
         run: |
           pushd build
-          bash sudo ./compile.sh build BOARD=${{ inputs.board }} \
+          sudo bash ./compile.sh build BOARD=${{ inputs.board }} \
           BRANCH=${{ inputs.branch }} \
           ${{ env.BUILD_ARGS }} \
           KERNEL_CONFIGURE=no \
