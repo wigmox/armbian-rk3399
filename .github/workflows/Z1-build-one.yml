@@ -179,14 +179,17 @@ jobs:
           DESKTOP_APPGROUPS: "browsers chat desktop_tools editors email internet multimedia office programming remote_desktop"
           
         run: |
+          INPUTS_SYSTEM="${{ inputs.system }}"
 
           # 检查输入是否以 "desktop-" 开头
-          if [ "${{ inputs.system }}" == "desktop-*" ]; then
-            echo "Setting up for a desktop system..."
+          if [[ "$INPUTS_SYSTEM" == desktop-* ]]; then
+            echo "Setting up for a desktop system..." "$INPUTS_SYSTEM"
             # 使用 sed 命令来删除 "desktop-" 前缀
-            DESKTOP_NAME=$(echo "${{ inputs.system }}" | awk '{sub(/^desktop-/,"")}1')
+            DESKTOP_NAME=$(echo "$INPUTS_SYSTEM" | sed 's/^desktop-//')
+            echo "桌面版本为 ${DESKTOP_NAME}"
+            #DESKTOP_NAME=$(echo "${{ inputs.system }}" | awk '{sub(/^desktop-/,"")}1')
             # DESKTOP_NAME=$(echo "${{ inputs.system }}" | sed 's/^desktop-//' || echo "")
-            echo "桌面类型: ${DESKTOP_NAME}"
+            #echo "桌面类型: ${DESKTOP_NAME}"
             # 使用提取出的桌面名称动态构建参数字符串
             SYSTEM_ARGS="BUILD_DESKTOP=yes BUILD_MINIMAL=no DESKTOP_ENVIRONMENT=${DESKTOP_NAME} \
                          DESKTOP_ENVIRONMENT_CONFIG_NAME=config_base \
