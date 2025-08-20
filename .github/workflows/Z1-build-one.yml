@@ -192,7 +192,14 @@ jobs:
           elif [ "${{ inputs.system }}" == "desktop-"* ]; then
             echo "Setting up for a desktop system..."
             # 使用 sed 命令来删除 "desktop-" 前缀
-            DESKTOP_NAME=$(echo "${{ inputs.system }}" | sed 's/^desktop-//')
+            
+            if [[ "$SYSTEM_TYPE" =~ ^desktop- ]]; then
+              DESKTOP_NAME=$(echo "$SYSTEM_TYPE" | sed 's/^desktop-//' || echo "")
+            fi
+            
+            # DESKTOP_NAME="${SYSTEM_TYPE#desktop-}"
+            # DESKTOP_NAME=$(echo "$SYSTEM_TYPE" | awk '{sub(/^desktop-/,"")}1')
+            # DESKTOP_NAME=$(echo "${{ inputs.system }}" | sed 's/^desktop-//')
             echo "桌面类型: ${DESKTOP_NAME}"
             # 使用提取出的桌面名称动态构建参数字符串
             SYSTEM_ARGS="BUILD_DESKTOP=yes BUILD_MINIMAL=no DESKTOP_ENVIRONMENT=${DESKTOP_NAME} \
@@ -292,7 +299,7 @@ jobs:
       - name: 编译 [ ${{ env.armbian_version }} - ${{ inputs.board }} - ${{ inputs.release }} - ${{ inputs.branch }} - ${{ inputs.system }} - ${{ inputs.rootfs }} ]
         run: |
           pushd build
-          sudo bash ./compile.sh build BOARD=${{ inputs.board }} \
+          bash ./compile.sh build BOARD=${{ inputs.board }} \
           BRANCH=${{ inputs.branch }} \
           ${{ env.BUILD_ARGS }} \
           KERNEL_CONFIGURE=no \
