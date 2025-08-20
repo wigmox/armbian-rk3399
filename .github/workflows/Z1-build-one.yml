@@ -188,7 +188,7 @@ jobs:
             echo "Setting up for server system..."
             SYSTEM_ARGS="BUILD_DESKTOP=no BUILD_MINIMAL=no"
           # 检查输入是否以 "desktop-" 开头
-          elif [ "${{ inputs.system }}" == "desktop-"* ]; then
+          elif [ "${{ inputs.system }}" == desktop-* ]; then
             echo "Setting up for a desktop system..."
             # 使用 sed 命令来删除 "desktop-" 前缀
             DESKTOP_NAME=$(echo "${{ inputs.system }}" | sed 's/^desktop-//')
