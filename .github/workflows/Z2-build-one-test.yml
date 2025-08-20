@@ -4,6 +4,12 @@ on:
   workflow_dispatch:
     inputs:
 
+      rkdevflash:
+        description: '编译 Rockchip 镜像'
+        required: false
+        type: boolean
+        default: false
+
       board:
         description: '设备型号'
         required: true
@@ -97,6 +103,15 @@ on:
           - ext4
           - btrfs
         default: btrfs
+
+      extrawifi:
+        description: '编译 WIFI 驱动'
+        required: false
+        type: choice
+        options:
+          - yes
+          - no
+        default: yes
 
       vendor:
         description: '源码支持'
@@ -204,6 +219,15 @@ jobs:
         run: |
           echo "env.release_code: ${{ env.release_code }}"
 
+  - name: 编译 Rockchip 镜像
+    run: |
+      pushd build
+      EXT_FLAG=""
+      if ${{ inputs.rkdevflash }}; then
+        EXT_FLAG="EXT=rkdevflash"
+        echo "ext_flag=$EXT_FLAG" >> $GITHUB_ENV
+      fi
+
       - name: 初始化信息
         run: |
           sudo -E apt-get -y update
@@ -276,7 +300,10 @@ jobs:
           COMPRESS_OUTPUTIMAGE=sha,img,xz \
           BSPFREEZE=${{ inputs.bspfreeze }} \
           ROOTFS_TYPE=${{ inputs.rootfs }} \
-          VENDOR=${{ inputs.vendor }}
+          VENDOR=${{ inputs.vendor }} \
+          EXT=${{ env.ext_flag }} \
+          EXTRAWIFI=${{ inputs.extrawifi }} \
+          NETWORKING_STACK=network-manager
           popd
 
       - name: 显示剩余空间
