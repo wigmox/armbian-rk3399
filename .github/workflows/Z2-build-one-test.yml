@@ -296,8 +296,6 @@ jobs:
           # cp -f rockchip64_common.inc.txt build/config/sources/families/include/rockchip64_common.inc
           # sed -i 's|https://github.com/armbian/rkbin|https://github.com/wingonwu/rkbin|g' build/extensions/rkbin-tools.sh
           # grep 'wingonwu/rkbin' build/extensions/rkbin-tools.sh
-          sed -i '/BL31_BLOB="${BL31_BLOB:-"rk33\/rk3399_bl31_.*\.elf"}"$/a\        # ROCKUSB_BLOB is used to flash a board with rkdeveloptool (Linux, can use '\''rkdevflash'\'' extension) or RKDevTool (Windows) in MASKROM mode\n        ROCKUSB_BLOB="${MINILOADER_BLOB}"' build/config/sources/families/include/rockchip64_common.inc
-          grep -E '^BL31_BLOB=|^ROCKUSB_BLOB=|^MINILOADER_BLOB=' build/config/sources/families/include/rockchip64_common.inc
 
       - name: 编译 Rockchip 专属线刷镜像修改变量
         if: ${{ inputs.rkdevflash }} # 直接在 step 级别判断
