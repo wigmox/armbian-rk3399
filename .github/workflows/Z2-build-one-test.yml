@@ -295,13 +295,13 @@ jobs:
       - name: 复制 USERPATCHES 内容到源码根目录
         run: |
           cp -rvf userpatches build/
-          # 修改rootfs 分区位置
-          # sed -i 's|setenv rootdev "/dev/mmcblk0p1"|setenv rootdev "/dev/mmcblk0p2"|g' build/config/bootscripts/boot-rockchip.cmd
-          # 修改日志等级为最高
-          sed -i 's/\bverbosity=1\b/verbosity=7/g' build/config/bootenv/rockchip64.txt
           # cp -f rockchip64_common.inc.txt build/config/sources/families/include/rockchip64_common.inc
           # sed -i 's|https://github.com/armbian/rkbin|https://github.com/wingonwu/rkbin|g' build/extensions/rkbin-tools.sh
           # grep 'wingonwu/rkbin' build/extensions/rkbin-tools.sh
+          if ${{ inputs.rkdevflash }}; then
+          sed -i '/BL31_BLOB="${BL31_BLOB:-"rk33\/rk3399_bl31_v1.35.elf"}"/a\       # ROCKUSB_BLOB is used to flash a board with rkdeveloptool (Linux, can use '\''rkdevflash'\'' extension) or RKDevTool (Windows) in MASKROM mode\n       ROCKUSB_BLOB="rk33\/rk3399_miniloader_v1.26.bin"' build/config/sources/families/include/rockchip64_common.inc
+          fi
+          grep -E '^BL31_BLOB=|^ROCKUSB_BLOB=|^MINILOADER_BLOB=' armbian/config/sources/families/include/rockchip64_common.inc
 
       - name: 编译 [ ${{ env.armbian_version }} - ${{ inputs.board }} - ${{ inputs.release }} - ${{ inputs.branch }} - ${{ inputs.system }} - ${{ inputs.rootfs }} ]
         run: |
