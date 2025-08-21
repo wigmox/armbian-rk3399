@@ -204,8 +204,8 @@ jobs:
             SYSTEM_ARGS="BUILD_DESKTOP=no \
             BUILD_MINIMAL=no"
           fi
-          # echo "BUILD_ARGS=$SYSTEM_ARGS" >> $GITHUB_ENV
-          echo "BUILD_ARGS=$(printf %q "$SYSTEM_ARGS")" >> $GITHUB_ENV
+          echo "BUILD_ARGS=$SYSTEM_ARGS" >> $GITHUB_ENV
+          # echo "BUILD_ARGS=$(printf %q "$SYSTEM_ARGS")" >> $GITHUB_ENV
 
       - name: 显示选择所要编译的的系统类型
         run: |
@@ -232,14 +232,14 @@ jobs:
           if ${{ inputs.rkdevflash }}; then
           EXT_FLAG="EXT=rkdevflash"
           DOCKER_NO="PREFER_DOCKER=no"
-          echo "ext_flag=$EXT_FLAG" >> $GITHUB_ENV
-          
+          echo "EXT_FLAG=$EXT_FLAG" >> $GITHUB_ENV
           echo "DOCKER_NO=$DOCKER_NO" >> $GITHUB_ENV
           fi
 
       - name: 显示环境变量
         run: |
-          echo "env.ext_flag: ${{ env.ext_flag }}"
+          echo "env.EXT_FLAG: ${{ env.EXT_FLAG }}"
+          echo "env.DOCKER_NO: ${{ env.DOCKER_NO }}"
           echo "status=success" >> ${GITHUB_OUTPUT}
 
       - name: 初始化信息
@@ -314,7 +314,7 @@ jobs:
           COMPRESS_OUTPUTIMAGE=sha,img,xz \
           BSPFREEZE=${{ inputs.bspfreeze }} \
           ROOTFS_TYPE=${{ inputs.rootfs }} \
-          ${{ env.ext_flag }} \
+          ${{ env.EXT_FLAG }} \
           ${{ env.DOCKER_NO }} \
           VENDOR=${{ inputs.vendor }} \
           EXTRAWIFI=${{ inputs.extrawifi }} \
