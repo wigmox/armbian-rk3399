@@ -127,16 +127,11 @@ jobs:
       - name: 检出目标
         uses: actions/checkout@v5
 
-      # 判断并确定最终要使用的 Armbian 版本
       - name: 判断要使用的 Armbian 版本
         id: version_selector
         run: |
           USER_CHOICE="${{ inputs.version }}"
           ARMBIAN_VERSION=""
-
-      - name: 检出 Armbian 源码
-        run: |
-          git clone -q --single-branch --depth=1 --branch=${{ env.armbian_version }} $REPO_URL
 
           # 判断用户选择的是否是动态版本 (以 .y 结尾)
           if [[ "$USER_CHOICE" == *.y ]]; then
@@ -177,6 +172,11 @@ jobs:
 
           # 将最终确定的版本号输出到 GITHUB_ENV，供后续步骤使用
           echo "armbian_version=${ARMBIAN_VERSION}" >> $GITHUB_ENV
+
+
+      - name: 检出 Armbian 源码
+        run: |
+          git clone -q --single-branch --depth=1 --branch=${{ env.armbian_version }} $REPO_URL
 
       - name: 设置系统类型
         env:
