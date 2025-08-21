@@ -4,6 +4,12 @@ on:
   workflow_dispatch:
     inputs:
 
+      rkdevflash:
+        description: '编译 Rockchip 专属线刷镜像'
+        required: false
+        type: boolean
+        default: false
+
       board:
         description: '设备型号'
         required: true
@@ -198,7 +204,8 @@ jobs:
             SYSTEM_ARGS="BUILD_DESKTOP=no \
             BUILD_MINIMAL=no"
           fi
-          echo "BUILD_ARGS=$SYSTEM_ARGS" >> $GITHUB_ENV
+          # echo "BUILD_ARGS=$SYSTEM_ARGS" >> $GITHUB_ENV
+          echo "BUILD_ARGS=$(printf %q "$SYSTEM_ARGS")" >> $GITHUB_ENV
 
       - name: 显示选择所要编译的的系统类型
         run: |
@@ -218,6 +225,22 @@ jobs:
       - name: 显示系统代号
         run: |
           echo "env.release_code: ${{ env.release_code }}"
+
+      - name: 编译 Rockchip 专属线刷镜像
+        run: |
+          EXT_FLAG=""
+          if ${{ inputs.rkdevflash }}; then
+          EXT_FLAG="EXT=rkdevflash"
+          DOCKER_NO="PREFER_DOCKER=no"
+          echo "ext_flag=$EXT_FLAG" >> $GITHUB_ENV
+          
+          echo "DOCKER_NO=$DOCKER_NO" >> $GITHUB_ENV
+          fi
+
+      - name: 显示环境变量
+        run: |
+          echo "env.ext_flag: ${{ env.ext_flag }}"
+          echo "status=success" >> ${GITHUB_OUTPUT}
 
       - name: 初始化信息
         run: |
@@ -291,9 +314,11 @@ jobs:
           COMPRESS_OUTPUTIMAGE=sha,img,xz \
           BSPFREEZE=${{ inputs.bspfreeze }} \
           ROOTFS_TYPE=${{ inputs.rootfs }} \
+          ${{ env.ext_flag }} \
+          ${{ env.DOCKER_NO }} \
           VENDOR=${{ inputs.vendor }} \
           EXTRAWIFI=${{ inputs.extrawifi }} \
-          IMAGE_XZ_COMPRESSION_RATIO=9
+          IMAGE_XZ_COMPRESSION_RATIO=6
           SEVENZIP=yes
           NETWORKING_STACK=network-manager
           popd
