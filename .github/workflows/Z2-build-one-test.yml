@@ -127,16 +127,16 @@ jobs:
       - name: 检出目标
         uses: actions/checkout@v5
 
-      - name: 检出 Armbian 源码
-        run: |
-          git clone -q --single-branch --depth=1 --branch=${{ env.armbian_version }} $REPO_URL
-
       # 判断并确定最终要使用的 Armbian 版本
       - name: 判断要使用的 Armbian 版本
         id: version_selector
         run: |
           USER_CHOICE="${{ inputs.version }}"
           ARMBIAN_VERSION=""
+
+      - name: 检出 Armbian 源码
+        run: |
+          git clone -q --single-branch --depth=1 --branch=${{ env.armbian_version }} $REPO_URL
 
           # 判断用户选择的是否是动态版本 (以 .y 结尾)
           if [[ "$USER_CHOICE" == *.y ]]; then
