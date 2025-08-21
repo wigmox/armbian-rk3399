@@ -301,7 +301,7 @@ jobs:
           if ${{ inputs.rkdevflash }}; then
           sed -i '/BL31_BLOB="${BL31_BLOB:-"rk33\/rk3399_bl31_.*\.elf"}"$/a\        # ROCKUSB_BLOB is used to flash a board with rkdeveloptool (Linux, can use '\''rkdevflash'\'' extension) or RKDevTool (Windows) in MASKROM mode\n        ROCKUSB_BLOB="${MINILOADER_BLOB}"' build/config/sources/families/include/rockchip64_common.inc
           fi
-          grep -E '^BL31_BLOB=|^ROCKUSB_BLOB=|^MINILOADER_BLOB=' armbian/config/sources/families/include/rockchip64_common.inc
+          grep -E '^BL31_BLOB=|^ROCKUSB_BLOB=|^MINILOADER_BLOB=' build/config/sources/families/include/rockchip64_common.inc
 
       - name: 编译 [ ${{ env.armbian_version }} - ${{ inputs.board }} - ${{ inputs.release }} - ${{ inputs.branch }} - ${{ inputs.system }} - ${{ inputs.rootfs }} ]
         run: |
