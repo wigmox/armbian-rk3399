@@ -127,6 +127,10 @@ jobs:
       - name: 检出目标
         uses: actions/checkout@v5
 
+      - name: 检出 Armbian 源码
+        run: |
+          git clone -q --single-branch --depth=1 --branch=${{ env.armbian_version }} $REPO_URL
+
       # 判断并确定最终要使用的 Armbian 版本
       - name: 判断要使用的 Armbian 版本
         id: version_selector
@@ -229,7 +233,8 @@ jobs:
       - name: 编译 Rockchip 专属线刷镜像
         if: ${{ inputs.rkdevflash }} # 直接在 step 级别判断
         run: |
-          EXT_FLAG=""
+          sed -i '/BL31_BLOB="${BL31_BLOB:-"rk33\/rk3399_bl31_v1.35.elf"}"$/a\        ROCKUSB_BLOB="${MINILOADER_BLOB}"' build/config/sources/families/include/rockchip64_common.inc
+          grep -E '^BL31_BLOB=|^ROCKUSB_BLOB=|^MINILOADER_BLOB=' build/config/sources/families/include/rockchip64_common.inc
           EXT_FLAG="EXT=rkdevflash"
           DOCKER_NO="PREFER_DOCKER=no"
           echo "EXT_FLAG=$EXT_FLAG" >> $GITHUB_ENV
@@ -286,22 +291,12 @@ jobs:
           grep BTRFS /boot/config-$(uname -r)
           sudo timedatectl set-timezone "$TZ"
 
-      - name: 检出 Armbian 源码
-        run: |
-          git clone -q --single-branch --depth=1 --branch=${{ env.armbian_version }} $REPO_URL
-
       - name: 复制 USERPATCHES 内容到源码根目录
         run: |
           cp -rvf userpatches build/
           # cp -f rockchip64_common.inc.txt build/config/sources/families/include/rockchip64_common.inc
           # sed -i 's|https://github.com/armbian/rkbin|https://github.com/wingonwu/rkbin|g' build/extensions/rkbin-tools.sh
           # grep 'wingonwu/rkbin' build/extensions/rkbin-tools.sh
-
-      - name: 编译 Rockchip 专属线刷镜像修改变量
-        if: ${{ inputs.rkdevflash }} # 直接在 step 级别判断
-        run: |
-          sed -i '/BL31_BLOB="${BL31_BLOB:-"rk33\/rk3399_bl31_.*\.elf"}"$/a\        # ROCKUSB_BLOB is used to flash a board with rkdeveloptool (Linux, can use '\''rkdevflash'\'' extension) or RKDevTool (Windows) in MASKROM mode\n        ROCKUSB_BLOB="${MINILOADER_BLOB}"' build/config/sources/families/include/rockchip64_common.inc
-          grep -E '^BL31_BLOB=|^ROCKUSB_BLOB=|^MINILOADER_BLOB=' build/config/sources/families/include/rockchip64_common.inc
 
       - name: 编译 [ ${{ env.armbian_version }} - ${{ inputs.board }} - ${{ inputs.release }} - ${{ inputs.branch }} - ${{ inputs.system }} - ${{ inputs.rootfs }} ]
         run: |
