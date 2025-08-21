@@ -4,6 +4,12 @@ on:
   workflow_dispatch:
     inputs:
 
+      rkdevflash:
+        description: '编译 Rockchip 专属线刷镜像'
+        required: false
+        type: boolean
+        default: false
+
       board:
         description: '设备型号'
         required: true
@@ -121,7 +127,6 @@ jobs:
       - name: 检出目标
         uses: actions/checkout@v5
 
-      # 判断并确定最终要使用的 Armbian 版本
       - name: 判断要使用的 Armbian 版本
         id: version_selector
         run: |
@@ -168,6 +173,11 @@ jobs:
           # 将最终确定的版本号输出到 GITHUB_ENV，供后续步骤使用
           echo "armbian_version=${ARMBIAN_VERSION}" >> $GITHUB_ENV
 
+
+      - name: 检出 Armbian 源码
+        run: |
+          git clone -q --single-branch --depth=1 --branch=${{ env.armbian_version }} $REPO_URL
+
       - name: 设置系统类型
         env:
           DESKTOP_APPGROUPS: "browsers chat desktop_tools editors email internet multimedia office programming remote_desktop"
@@ -199,6 +209,7 @@ jobs:
             BUILD_MINIMAL=no"
           fi
           echo "BUILD_ARGS=$SYSTEM_ARGS" >> $GITHUB_ENV
+          # echo "BUILD_ARGS=$(printf %q "$SYSTEM_ARGS")" >> $GITHUB_ENV
 
       - name: 显示选择所要编译的的系统类型
         run: |
@@ -218,6 +229,26 @@ jobs:
       - name: 显示系统代号
         run: |
           echo "env.release_code: ${{ env.release_code }}"
+
+      - name: 编译 Rockchip 专属线刷镜像
+        if: ${{ inputs.rkdevflash }} # 直接在 step 级别判断
+        run: |
+        
+          sed -i '/BL31_BLOB="${BL31_BLOB:-"rk33\/rk3399_bl31_.*\.elf"}"$/a\ROCKUSB_BLOB="${MINILOADER_BLOB}"' build/config/sources/families/include/rockchip64_common.inc
+          # sed -i '/BL31_BLOB="${BL31_BLOB:-"rk33\/rk3399_bl31_v1.35.elf"}"$/a\ROCKUSB_BLOB="${MINILOADER_BLOB}"' build/config/sources/families/include/rockchip64_common.inc
+          # sed -i '\@BL31_BLOB="${BL31_BLOB:-"rk33/rk3399_bl31_v1.35.elf"}"$@a\ROCKUSB_BLOB="${MINILOADER_BLOB}"' build/config/sources/families/include/rockchip64_common.inc
+          
+          grep -E '^BL31_BLOB=|^ROCKUSB_BLOB=|^MINILOADER_BLOB=' build/config/sources/families/include/rockchip64_common.inc
+          EXT_FLAG="EXT=rkdevflash"
+          DOCKER_NO="PREFER_DOCKER=no"
+          echo "EXT_FLAG=$EXT_FLAG" >> $GITHUB_ENV
+          echo "DOCKER_NO=$DOCKER_NO" >> $GITHUB_ENV
+
+      - name: 显示环境变量
+        run: |
+          echo "env.EXT_FLAG: ${{ env.EXT_FLAG }}"
+          echo "env.DOCKER_NO: ${{ env.DOCKER_NO }}"
+          echo "status=success" >> ${GITHUB_OUTPUT}
 
       - name: 初始化信息
         run: |
@@ -264,18 +295,9 @@ jobs:
           grep BTRFS /boot/config-$(uname -r)
           sudo timedatectl set-timezone "$TZ"
 
-
-      - name: 检出 Armbian 源码
-        run: |
-          git clone -q --single-branch --depth=1 --branch=${{ env.armbian_version }} $REPO_URL
-
       - name: 复制 USERPATCHES 内容到源码根目录
         run: |
           cp -rvf userpatches build/
-          # 修改rootfs 分区位置
-          # sed -i 's|setenv rootdev "/dev/mmcblk0p1"|setenv rootdev "/dev/mmcblk0p2"|g' build/config/bootscripts/boot-rockchip.cmd
-          # 修改日志等级为最高
-          sed -i 's/\bverbosity=1\b/verbosity=7/g' build/config/bootenv/rockchip64.txt
           # cp -f rockchip64_common.inc.txt build/config/sources/families/include/rockchip64_common.inc
           # sed -i 's|https://github.com/armbian/rkbin|https://github.com/wingonwu/rkbin|g' build/extensions/rkbin-tools.sh
           # grep 'wingonwu/rkbin' build/extensions/rkbin-tools.sh
@@ -291,8 +313,12 @@ jobs:
           COMPRESS_OUTPUTIMAGE=sha,img,xz \
           BSPFREEZE=${{ inputs.bspfreeze }} \
           ROOTFS_TYPE=${{ inputs.rootfs }} \
+          ${{ env.EXT_FLAG }} \
+          ${{ env.DOCKER_NO }} \
           VENDOR=${{ inputs.vendor }} \
           EXTRAWIFI=${{ inputs.extrawifi }} \
+          IMAGE_XZ_COMPRESSION_RATIO=6
+          SEVENZIP=yes
           NETWORKING_STACK=network-manager
           popd
 
@@ -347,3 +373,4 @@ jobs:
           workflows_keep_day: 10             # 清理workflows时候排除关键字符runs外，再保留N个时间靠前的runs不清理
           repo: ${{ github.repository }}        # 清理仓库设置，默认为您启动本程序的自身仓库
           gh_token: ${{ secrets.GITHUB_TOKEN }}   # GITHUB_TOKEN，仓库密匙，必须存在
+
