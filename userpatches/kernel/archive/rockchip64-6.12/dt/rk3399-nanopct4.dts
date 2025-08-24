@@ -625,7 +625,7 @@
 
 				port@2 {
 					reg = <2>;
-					usb_con_dp: endpoint {
+					usb_con_sbu: endpoint {
 						remote-endpoint =
 							<&tcphy0_typec_dp>;
 					};
@@ -762,7 +762,7 @@
 &tcphy0_dp {
 	port {
 		tcphy0_typec_dp: endpoint {
-			remote-endpoint = <&usb_con_dp>;
+			remote-endpoint = <&usb_con_sbu>;
 		};
 	};
 };
